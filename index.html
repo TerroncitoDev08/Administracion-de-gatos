@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>RedFinance | Control Financiero</title>
+
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <!-- ============================= -->
+    <!-- SIDEBAR -->
+    <!-- ============================= -->
+
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-logo">RF</div>
+
+        <div class="brand-text">
+          <h2>RedFinance</h2>
+          <span>Control financiero</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <p class="nav-title">PRINCIPAL</p>
+
+        <button class="nav-item active" data-section="dashboard">
+          <span class="nav-icon">▦</span>
+          <span>Dashboard</span>
+        </button>
+
+        <button class="nav-item" data-section="dinero">
+          <span class="nav-icon">S/</span>
+          <span>Mi dinero</span>
+        </button>
+
+        <button class="nav-item" data-section="movimientos">
+          <span class="nav-icon">↕</span>
+          <span>Movimientos</span>
+        </button>
+
+        <p class="nav-title">FINANZAS</p>
+
+        <button class="nav-item" data-section="meDeben">
+          <span class="nav-icon">↓</span>
+          <span>Me deben</span>
+        </button>
+
+        <button class="nav-item" data-section="debo">
+          <span class="nav-icon">↑</span>
+          <span>Debo</span>
+        </button>
+
+        <button class="nav-item" data-section="metas">
+          <span class="nav-icon">◎</span>
+          <span>Metas de ahorro</span>
+        </button>
+
+        <p class="nav-title">SISTEMA</p>
+
+        <button class="nav-item" data-section="administracion">
+          <span class="nav-icon">⚙</span>
+          <span>Administración</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="user-card">
+          <div class="user-avatar">U</div>
+
+          <div>
+            <strong>Mi cuenta</strong>
+            <span>Finanzas personales</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============================= -->
+    <!-- OVERLAY MOBILE -->
+    <!-- ============================= -->
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ============================= -->
+    <!-- MAIN -->
+    <!-- ============================= -->
+
+    <main class="main-content">
+      <!-- HEADER -->
+
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu">☰</button>
+
+        <div class="page-heading">
+          <span class="page-label"> CONTROL FINANCIERO </span>
+
+          <h1 id="pageTitle">Dashboard</h1>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="theme-button" id="themeButton" title="Cambiar tema">
+            ☾
+          </button>
+        </div>
+      </header>
+
+      <!-- ============================= -->
+      <!-- DASHBOARD -->
+      <!-- ============================= -->
+
+      <section class="content-section active" id="dashboard">
+        <div class="welcome-row">
+          <div>
+            <span class="section-kicker"> RESUMEN GENERAL </span>
+
+            <h2>Tu situación financiera</h2>
+
+            <p>
+              Controla tus ingresos, gastos y objetivos desde un solo lugar.
+            </p>
+          </div>
+
+          <button class="btn btn-primary" id="quickMovementButton">
+            + Nuevo movimiento
+          </button>
+        </div>
+
+        <!-- BALANCE PRINCIPAL -->
+
+        <div class="balance-card">
+          <div class="balance-info">
+            <span> DINERO DISPONIBLE </span>
+
+            <h2 id="dashboardAvailable">S/ 0.00</h2>
+
+            <p>Dinero inicial + ingresos − gastos</p>
+          </div>
+
+          <div class="balance-icon">S/</div>
+        </div>
+
+        <!-- ESTADÍSTICAS -->
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label"> DINERO INICIAL </span>
+
+              <div class="stat-icon black">S/</div>
+            </div>
+
+            <strong id="dashboardInitial"> S/ 0.00 </strong>
+
+            <span class="stat-description"> Fondos registrados </span>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label"> INGRESOS </span>
+
+              <div class="stat-icon green">↑</div>
+            </div>
+
+            <strong class="positive" id="dashboardIncome"> S/ 0.00 </strong>
+
+            <span class="stat-description"> Total de ingresos </span>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label"> GASTOS </span>
+
+              <div class="stat-icon red">↓</div>
+            </div>
+
+            <strong class="negative" id="dashboardExpense"> S/ 0.00 </strong>
+
+            <span class="stat-description"> Total de gastos </span>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-top">
+              <span class="stat-label"> BALANCE </span>
+
+              <div class="stat-icon dark-red">$</div>
+            </div>
+
+            <strong id="dashboardBalance"> S/ 0.00 </strong>
+
+            <span class="stat-description"> Ingresos − gastos </span>
+          </div>
+        </div>
+
+        <!-- GRÁFICOS -->
+
+        <div class="dashboard-grid">
+          <div class="panel chart-panel">
+            <div class="panel-header">
+              <div>
+                <h3>Resumen financiero</h3>
+
+                <p>Distribución de tus ingresos y gastos</p>
+              </div>
+            </div>
+
+            <div class="chart-container">
+              <div class="donut-chart">
+                <div class="donut-center">
+                  <strong id="chartTotal"> S/ 0 </strong>
+
+                  <span> Movimientos </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-legend">
+              <div class="legend-item">
+                <span class="legend-dot income-dot"></span>
+
+                <span> Ingresos </span>
+
+                <strong id="chartIncome"> S/ 0 </strong>
+              </div>
+
+              <div class="legend-item">
+                <span class="legend-dot expense-dot"></span>
+
+                <span> Gastos </span>
+
+                <strong id="chartExpense"> S/ 0 </strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTIVIDAD -->
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Últimos movimientos</h3>
+
+                <p>Actividad financiera reciente</p>
+              </div>
+
+              <button class="text-button" data-section-link="movimientos">
+                Ver todos
+              </button>
+            </div>
+
+            <div id="recentMovements">
+              <div class="empty-state">
+                <div class="empty-icon">↕</div>
+
+                <p>Todavía no tienes movimientos.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- METAS -->
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Progreso de tus metas</h3>
+
+              <p>Revisa cuánto has avanzado.</p>
+            </div>
+
+            <button class="text-button" data-section-link="metas">
+              Ver metas
+            </button>
+          </div>
+
+          <div class="goals-preview" id="dashboardGoals"></div>
+        </div>
+      </section>
+
+      <!-- ============================= -->
+      <!-- MI DINERO -->
+      <!-- ============================= -->
+
+      <section class="content-section" id="dinero">
+        <div class="section-header">
+          <div>
+            <span class="section-kicker"> MIS FONDOS </span>
+
+            <h2>Mi dinero</h2>
+
+            <p>Registra cuánto dinero tienes actualmente.</p>
+          </div>
+
+          <button class="btn btn-primary" id="addMoneyButton">
+            + Agregar dinero
+          </button>
+        </div>
+
+        <div class="balance-small-card">
+          <span> DINERO DISPONIBLE </span>
+
+          <strong id="availableBalance"> S/ 0.00 </strong>
+
+          <small> Dinero inicial + ingresos − gastos </small>
+        </div>
+
+        <div class="cards-grid" id="moneyList"></div>
+      </section>
+
+      <!-- ============================= -->
+      <!-- MOVIMIENTOS -->
+      <!-- ============================= -->
+
+      <section class="content-section" id="movimientos">
+        <div class="section-header">
+          <div>
+            <span class="section-kicker"> ACTIVIDAD </span>
+
+            <h2>Movimientos</h2>
+
+            <p>Registra y administra tus ingresos y gastos.</p>
+          </div>
+
+          <button class="btn btn-primary" id="addMovementButton">
+            + Nuevo movimiento
+          </button>
+        </div>
+
+        <div class="filter-bar">
+          <input
+            type="text"
+            id="movementSearch"
+            placeholder="Buscar movimiento..."
+          />
+
+          <select id="movementFilter">
+            <option value="todos">Todos</option>
+
+            <option value="ingreso">Ingresos</option>
+
+            <option value="gasto">Gastos</option>
+          </select>
+        </div>
+
+        <div class="panel">
+          <div class="table-wrapper" id="movementTable"></div>
+        </div>
+      </section>
+
+      <!-- ============================= -->
+      <!-- ME DEBEN -->
+      <!-- ============================= -->
+
+      <section class="content-section" id="meDeben">
+        <div class="section-header">
+          <div>
+            <span class="section-kicker"> CUENTAS POR COBRAR </span>
+
+            <h2>Me deben</h2>
+
+            <p>Registra el dinero que otras personas te deben.</p>
+          </div>
+
+          <button class="btn btn-primary" id="addReceivableButton">
+            + Registrar deuda
+          </button>
+        </div>
+
+        <div class="balance-small-card">
+          <span> TOTAL QUE TE DEBEN </span>
+
+          <strong id="receivableTotal"> S/ 0.00 </strong>
+        </div>
+
+        <div class="cards-grid" id="receivableList"></div>
+      </section>
+
+      <!-- ============================= -->
+      <!-- DEBO -->
+      <!-- ============================= -->
+
+      <section class="content-section" id="debo">
+        <div class="section-header">
+          <div>
+            <span class="section-kicker"> CUENTAS POR PAGAR </span>
+
+            <h2>Debo</h2>
+
+            <p>Lleva el control de tus deudas pendientes.</p>
+          </div>
+
+          <button class="btn btn-primary" id="addDebtButton">
+            + Registrar deuda
+          </button>
+        </div>
+
+        <div class="balance-small-card dark">
+          <span> TOTAL QUE DEBES </span>
+
+          <strong id="debtTotal"> S/ 0.00 </strong>
+        </div>
+
+        <div class="cards-grid" id="debtList"></div>
+      </section>
+
+      <!-- ============================= -->
+      <!-- METAS -->
+      <!-- ============================= -->
+
+      <section class="content-section" id="metas">
+        <div class="section-header">
+          <div>
+            <span class="section-kicker"> OBJETIVOS </span>
+
+            <h2>Metas de ahorro</h2>
+
+            <p>Define objetivos y controla tu progreso.</p>
+          </div>
+
+          <button class="btn btn-primary" id="addGoalButton">
+            + Nueva meta
+          </button>
+        </div>
+
+        <div class="cards-grid" id="goalsList"></div>
+      </section>
+
+      <!-- ============================= -->
+      <!-- ADMINISTRACIÓN -->
+      <!-- ============================= -->
+
+      <section class="content-section" id="administracion">
+        <div class="section-header">
+          <div>
+            <span class="section-kicker"> CONFIGURACIÓN </span>
+
+            <h2>Administración</h2>
+
+            <p>Gestiona la información de tu aplicación.</p>
+          </div>
+        </div>
+
+        <div class="admin-grid">
+          <div class="admin-card">
+            <div class="admin-icon">↓</div>
+
+            <h3>Exportar datos</h3>
+
+            <p>Descarga una copia de tus datos en formato JSON.</p>
+
+            <button class="btn btn-secondary" id="exportDataButton">
+              Exportar JSON
+            </button>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-icon">↻</div>
+
+            <h3>Restaurar datos</h3>
+
+            <p>Importa nuevamente un archivo JSON.</p>
+
+            <input type="file" id="importDataInput" accept=".json" hidden />
+
+            <button class="btn btn-secondary" id="importDataButton">
+              Importar JSON
+            </button>
+          </div>
+
+          <div class="admin-card danger-card">
+            <div class="admin-icon">!</div>
+
+            <h3>Borrar información</h3>
+
+            <p>Elimina todos los datos guardados en este navegador.</p>
+
+            <button class="btn btn-danger" id="clearDataButton">
+              Borrar todos los datos
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============================= -->
+    <!-- MODAL -->
+    <!-- ============================= -->
+
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <span class="section-kicker"> NUEVO REGISTRO </span>
+
+            <h2 id="modalTitle">Agregar</h2>
+          </div>
+
+          <button class="modal-close" id="modalClose">×</button>
+        </div>
+
+        <form id="modalForm">
+          <div class="form-fields" id="formFields"></div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="cancelModal">
+              Cancelar
+            </button>
+
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
