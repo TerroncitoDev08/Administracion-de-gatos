@@ -1,452 +1,630 @@
-/* =========================================
-   REDFINANCE
-   CONTROL FINANCIERO PERSONAL
-========================================= */
-
-
-/* =========================================
-   ESTADO DE LA APLICACIÓN
-========================================= */
+const STORAGE_KEY = "redfinance_data";
 
 const defaultData = {
 
-    dinero: [],
+    movements: [],
 
-    movimientos: [],
+    owedToMe: [],
 
-    meDeben: [],
+    iOwe: [],
 
-    debo: [],
-
-    metas: []
+    goals: []
 
 };
 
+let data = loadData();
 
-let data =
-    JSON.parse(
-        localStorage.getItem("redFinanceData")
-    ) || defaultData;
+function loadData() {
 
+    const savedData =
+        localStorage.getItem(STORAGE_KEY);
 
-let currentModalType = null;
+    if (!savedData) {
 
-let editingId = null;
+        return {
+            ...defaultData
+        };
 
+    }
 
-/* =========================================
-   UTILIDADES
-========================================= */
+    try {
+
+        const parsed =
+            JSON.parse(savedData);
+
+        return {
+
+            ...defaultData,
+
+            ...parsed,
+
+            movements:
+                parsed.movements || [],
+
+            owedToMe:
+                parsed.owedToMe || [],
+
+            iOwe:
+                parsed.iOwe || [],
+
+            goals:
+                parsed.goals || []
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "Error al cargar datos:",
+            error
+        );
+
+        return {
+            ...defaultData
+        };
+
+    }
+
+}
 
 function saveData() {
 
     localStorage.setItem(
-        "redFinanceData",
+
+        STORAGE_KEY,
+
         JSON.stringify(data)
+
     );
 
 }
-
-
-function generateId() {
-
-    return Date.now().toString();
-
-}
-
 
 function formatMoney(amount) {
 
     return new Intl.NumberFormat(
-        "es-US",
+        "es-PE",
         {
             style: "currency",
             currency: "PEN"
         }
-    ).format(
-        Number(amount) || 0
-    );
+    ).format(Number(amount) || 0);
 
 }
-
 
 function formatDate(date) {
 
-    if (!date) return "-";
+    if (!date) {
+        return "";
+    }
 
-    return new Date(
-        date + "T00:00:00"
-    ).toLocaleDateString(
-        "es-PE"
+    const d =
+        new Date(
+            `${date}T00:00:00`
+        );
+
+    return d.toLocaleDateString(
+        "es-PE",
+        {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        }
     );
 
 }
 
+function generateId() {
 
-/* =========================================
-   CÁLCULO FINANCIERO
-========================================= */
-
-function calculateFinancialSummary() {
-
-    const saldoInicial =
-        data.dinero.reduce(
-            (total, item) => {
-
-                return total +
-                    Number(item.monto || 0);
-
-            },
-            0
-        );
-
-
-    const ingresos =
-        data.movimientos
-            .filter(
-                item =>
-                    item.tipo === "ingreso"
-            )
-            .reduce(
-                (total, item) => {
-
-                    return total +
-                        Number(item.monto || 0);
-
-                },
-                0
-            );
-
-
-    const gastos =
-        data.movimientos
-            .filter(
-                item =>
-                    item.tipo === "gasto"
-            )
-            .reduce(
-                (total, item) => {
-
-                    return total +
-                        Number(item.monto || 0);
-
-                },
-                0
-            );
-
-
-    const dineroDisponible =
-        saldoInicial +
-        ingresos -
-        gastos;
-
-
-    const balance =
-        ingresos -
-        gastos;
-
-
-    return {
-
-        saldoInicial,
-
-        ingresos,
-
-        gastos,
-
-        dineroDisponible,
-
-        balance
-
-    };
+    return Date.now().toString()
+        + Math.random()
+            .toString(36)
+            .substring(2, 9);
 
 }
-
-
-/* =========================================
-   NAVEGACIÓN
-========================================= */
 
 const navItems =
-    document.querySelectorAll(
-        ".nav-item"
-    );
-
+    document.querySelectorAll(".nav-item[data-section]");
 
 const sections =
-    document.querySelectorAll(
-        ".content-section"
-    );
-
+    document.querySelectorAll(".content-section");
 
 const pageTitle =
-    document.getElementById(
-        "pageTitle"
-    );
+    document.getElementById("pageTitle");
 
+const pageSubtitle =
+    document.getElementById("pageSubtitle");
 
-navItems.forEach(
-    button => {
+const sectionTitles = {
 
-        button.addEventListener(
-            "click",
-            () => {
+    dashboard: [
+        "Dashboard",
+        "Resumen general de tus finanzas"
+    ],
 
-                const sectionId =
-                    button.dataset.section;
+    movimientos: [
+        "Movimientos",
+        "Control de ingresos y gastos"
+    ],
 
-                openSection(
-                    sectionId
-                );
+    meDeben: [
+        "Me deben",
+        "Controla tus cuentas por cobrar"
+    ],
 
-            }
-        );
+    debo: [
+        "Debo",
+        "Controla tus cuentas por pagar"
+    ],
 
-    }
-);
+    metas: [
+        "Metas de ahorro",
+        "Alcanza tus objetivos financieros"
+    ],
 
+    estadisticas: [
+        "Estadísticas",
+        "Analiza tus finanzas"
+    ],
 
-document.querySelectorAll(
-    "[data-section-link]"
-).forEach(
-    button => {
+    configuracion: [
+        "Configuración",
+        "Administra tus datos"
+    ]
 
-        button.addEventListener(
-            "click",
-            () => {
+};
 
-                openSection(
-                    button.dataset.sectionLink
-                );
+function showSection(sectionName) {
 
-            }
-        );
+    sections.forEach(section => {
 
-    }
-);
+        section.classList.remove("active");
 
+    });
 
-function openSection(sectionId) {
-
-    sections.forEach(
-        section => {
-
-            section.classList.remove(
-                "active"
-            );
-
-        }
-    );
-
-
-    navItems.forEach(
-        item => {
-
-            item.classList.remove(
-                "active"
-            );
-
-        }
-    );
-
-
-    const section =
+    const target =
         document.getElementById(
-            sectionId
+            `section-${sectionName}`
         );
 
+    if (target) {
 
-    const nav =
-        document.querySelector(
-            `[data-section="${sectionId}"]`
-        );
-
-
-    if (section) {
-
-        section.classList.add(
-            "active"
-        );
+        target.classList.add("active");
 
     }
 
+    navItems.forEach(item => {
 
-    if (nav) {
+        item.classList.remove("active");
 
-        nav.classList.add(
-            "active"
-        );
+        if (
+            item.dataset.section === sectionName
+        ) {
+
+            item.classList.add("active");
+
+        }
+
+    });
+
+    if (sectionTitles[sectionName]) {
 
         pageTitle.textContent =
-            nav.innerText.trim();
+            sectionTitles[sectionName][0];
+
+        pageSubtitle.textContent =
+            sectionTitles[sectionName][1];
 
     }
 
-
-    closeMobileMenu();
+    closeSidebar();
 
 }
 
+navItems.forEach(item => {
 
-/* =========================================
-   DASHBOARD
-========================================= */
+    item.addEventListener(
+        "click",
+        () => {
 
-function updateDashboard() {
+            showSection(
+                item.dataset.section
+            );
 
-    const summary =
-        calculateFinancialSummary();
-
-
-    document.getElementById(
-        "dashboardAvailable"
-    ).textContent =
-        formatMoney(
-            summary.dineroDisponible
-        );
-
-
-    document.getElementById(
-        "dashboardInitial"
-    ).textContent =
-        formatMoney(
-            summary.saldoInicial
-        );
-
-
-    document.getElementById(
-        "dashboardIncome"
-    ).textContent =
-        formatMoney(
-            summary.ingresos
-        );
-
-
-    document.getElementById(
-        "dashboardExpense"
-    ).textContent =
-        formatMoney(
-            summary.gastos
-        );
-
-
-    document.getElementById(
-        "dashboardBalance"
-    ).textContent =
-        formatMoney(
-            summary.balance
-        );
-
-
-    document.getElementById(
-        "availableBalance"
-    ).textContent =
-        formatMoney(
-            summary.dineroDisponible
-        );
-
-
-    updateChart(
-        summary.ingresos,
-        summary.gastos
+        }
     );
 
+});
 
-    renderRecentMovements();
+document
+    .querySelectorAll(
+        "[data-section-target]"
+    )
+    .forEach(button => {
 
-    renderDashboardGoals();
+        button.addEventListener(
+            "click",
+            () => {
+
+                showSection(
+                    button.dataset.sectionTarget
+                );
+
+            }
+        );
+
+    });
+
+const sidebar =
+    document.getElementById("sidebar");
+
+const sidebarOverlay =
+    document.getElementById("sidebarOverlay");
+
+const mobileMenuButton =
+    document.getElementById(
+        "mobileMenuButton"
+    );
+
+mobileMenuButton.addEventListener(
+    "click",
+    () => {
+
+        sidebar.classList.add("open");
+
+        sidebarOverlay.classList.add("active");
+
+    }
+);
+
+sidebarOverlay.addEventListener(
+    "click",
+    closeSidebar
+);
+
+function closeSidebar() {
+
+    sidebar.classList.remove("open");
+
+    sidebarOverlay.classList.remove(
+        "active"
+    );
 
 }
 
-
-/* =========================================
-   GRÁFICO
-========================================= */
-
-function updateChart(
-    ingresos,
-    gastos
-) {
-
-    const total =
-        ingresos +
-        gastos;
-
-
-    const incomeDegrees =
-        total > 0
-            ? (ingresos / total) * 360
-            : 0;
-
-
-    const chart =
-        document.querySelector(
-            ".donut-chart"
-        );
-
-
-    chart.style.background =
-        `conic-gradient(
-            var(--green)
-            0deg
-            ${incomeDegrees}deg,
-
-            var(--primary)
-            ${incomeDegrees}deg
-            360deg
-        )`;
-
-
+const themeToggle =
     document.getElementById(
-        "chartTotal"
-    ).textContent =
-        formatMoney(
-            total
-        );
+        "themeToggle"
+    );
 
+const savedTheme =
+    localStorage.getItem(
+        "redfinance_theme"
+    );
 
-    document.getElementById(
-        "chartIncome"
-    ).textContent =
-        formatMoney(
-            ingresos
-        );
+if (savedTheme === "dark") {
 
-
-    document.getElementById(
-        "chartExpense"
-    ).textContent =
-        formatMoney(
-            gastos
-        );
+    document.body.classList.add(
+        "dark-mode"
+    );
 
 }
 
+themeToggle.addEventListener(
+    "click",
+    () => {
 
-/* =========================================
-   ÚLTIMOS MOVIMIENTOS
-========================================= */
+        document.body.classList.toggle(
+            "dark-mode"
+        );
 
-function renderRecentMovements() {
+        const isDark =
+            document.body.classList.contains(
+                "dark-mode"
+            );
+
+        localStorage.setItem(
+
+            "redfinance_theme",
+
+            isDark
+                ? "dark"
+                : "light"
+
+        );
+
+        updateThemeButton();
+
+        updateCharts();
+
+    }
+);
+
+function updateThemeButton() {
+
+    const isDark =
+        document.body.classList.contains(
+            "dark-mode"
+        );
+
+    themeToggle.innerHTML = `
+
+        <span class="nav-icon">
+            ${isDark ? "☀" : "☾"}
+        </span>
+
+        <span>
+            ${isDark
+            ? "Modo claro"
+            : "Modo oscuro"
+        }
+        </span>
+
+    `;
+
+}
+
+updateThemeButton();
+
+function openModal(id) {
+
+    const modal =
+        document.getElementById(id);
+
+    if (modal) {
+
+        modal.classList.add(
+            "active"
+        );
+
+    }
+
+}
+
+function closeModal(id) {
+
+    const modal =
+        document.getElementById(id);
+
+    if (modal) {
+
+        modal.classList.remove(
+            "active"
+        );
+
+    }
+
+}
+
+document
+    .querySelectorAll(
+        "[data-close-modal]"
+    )
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                closeModal(
+                    button.dataset.closeModal
+                );
+
+            }
+        );
+
+    });
+
+document
+    .querySelectorAll(
+        ".modal-overlay"
+    )
+    .forEach(overlay => {
+
+        overlay.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target === overlay
+                ) {
+
+                    overlay.classList.remove(
+                        "active"
+                    );
+
+                }
+
+            }
+        );
+
+    });
+
+const movementForm =
+    document.getElementById(
+        "movementForm"
+    );
+
+const movementModal =
+    document.getElementById(
+        "movementModal"
+    );
+
+document
+    .getElementById(
+        "addMovementButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            resetMovementForm();
+
+            openModal(
+                "movementModal"
+            );
+
+        }
+    );
+
+document
+    .getElementById(
+        "quickAddButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            resetMovementForm();
+
+            openModal(
+                "movementModal"
+            );
+
+        }
+    );
+
+movementForm.addEventListener(
+    "submit",
+    event => {
+
+        event.preventDefault();
+
+        const id =
+            document.getElementById(
+                "movementId"
+            ).value;
+
+        const movement = {
+
+            id:
+                id || generateId(),
+
+            type:
+                document.getElementById(
+                    "movementType"
+                ).value,
+
+            description:
+                document.getElementById(
+                    "movementDescription"
+                ).value.trim(),
+
+            amount:
+                Number(
+                    document.getElementById(
+                        "movementAmount"
+                    ).value
+                ),
+
+            category:
+                document.getElementById(
+                    "movementCategory"
+                ).value,
+
+            date:
+                document.getElementById(
+                    "movementDate"
+                ).value
+
+        };
+
+        if (id) {
+
+            const index =
+                data.movements.findIndex(
+                    item =>
+                        item.id === id
+                );
+
+            if (index !== -1) {
+
+                data.movements[index] =
+                    movement;
+
+            }
+
+        } else {
+
+            data.movements.unshift(
+                movement
+            );
+
+        }
+
+        saveData();
+
+        closeModal(
+            "movementModal"
+        );
+
+        renderAll();
+
+    }
+);
+
+function resetMovementForm() {
+
+    movementForm.reset();
+
+    document.getElementById(
+        "movementId"
+    ).value = "";
+
+    document.getElementById(
+        "movementDate"
+    ).value =
+        new Date()
+            .toISOString()
+            .split("T")[0];
+
+    document.getElementById(
+        "movementType"
+    ).value = "income";
+
+}
+
+function renderMovements() {
 
     const container =
         document.getElementById(
-            "recentMovements"
+            "movementsList"
         );
 
+    const search =
+        document.getElementById(
+            "movementSearch"
+        ).value
+            .toLowerCase();
 
-    const movements =
-        [...data.movimientos]
-            .sort(
-                (a, b) =>
-                    new Date(b.fecha) -
-                    new Date(a.fecha)
-            )
-            .slice(
-                0,
-                5
+    const filter =
+        document.getElementById(
+            "movementFilter"
+        ).value;
+
+    let movements =
+        [...data.movements];
+
+    if (filter !== "all") {
+
+        movements =
+            movements.filter(
+                movement =>
+                    movement.type === filter
             );
 
+    }
+
+    if (search) {
+
+        movements =
+            movements.filter(
+                movement =>
+                    movement.description
+                        .toLowerCase()
+                        .includes(search)
+            );
+
+    }
 
     if (
         movements.length === 0
@@ -456,13 +634,8 @@ function renderRecentMovements() {
 
             <div class="empty-state">
 
-                <div class="empty-icon">
-                    ↕
-                </div>
-
-                <p>
-                    Todavía no tienes movimientos.
-                </p>
+                No hay movimientos
+                registrados.
 
             </div>
 
@@ -471,124 +644,87 @@ function renderRecentMovements() {
         return;
 
     }
-
 
     container.innerHTML =
         movements.map(
             movement => `
 
-                <div class="movement-row">
+            <div class="movement-item">
+
+                <div class="movement-info">
+
+                    <div class="
+                        movement-icon
+                        ${movement.type}
+                    ">
+
+                        ${movement.type === "income"
+                    ? "↑"
+                    : "↓"
+                }
+
+                    </div>
 
                     <div>
 
-                        <strong>
-                            ${movement.descripcion}
-                        </strong>
+                        <h4>
+                            ${escapeHTML(
+                    movement.description
+                )}
+                        </h4>
 
                         <span>
+
                             ${formatDate(
-                movement.fecha
-            )}
+                    movement.date
+                )}
+                            ·
+                            ${movement.category}
+
                         </span>
 
                     </div>
 
-                    <strong
-                        class="${movement.tipo === "ingreso"
-                    ? "positive"
-                    : "negative"
-                }"
-                    >
-                        ${movement.tipo === "ingreso"
+                </div>
+
+                <div class="movement-right">
+
+                    <strong class="
+                        movement-amount
+                        ${movement.type}
+                    ">
+
+                        ${movement.type === "income"
                     ? "+"
                     : "-"
                 }
+
                         ${formatMoney(
-                    movement.monto
+                    movement.amount
                 )}
+
                     </strong>
 
-                </div>
-
-            `
-        ).join("");
-
-}
-
-
-/* =========================================
-   DINERO
-========================================= */
-
-function renderMoney() {
-
-    const container =
-        document.getElementById(
-            "moneyList"
-        );
-
-
-    if (
-        data.dinero.length === 0
-    ) {
-
-        container.innerHTML = `
-
-            <div class="empty-state">
-
-                <p>
-                    No tienes dinero inicial registrado.
-                </p>
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        data.dinero.map(
-            item => `
-
-                <div class="info-card">
-
-                    <div class="info-card-top">
-
-                        <div>
-
-                            <h3>
-                                ${item.nombre}
-                            </h3>
-
-                            <p>
-                                ${item.tipo}
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="amount">
-
-                        ${formatMoney(
-                item.monto
-            )}
-
-                    </div>
-
-
-                    <div class="card-actions">
+                    <div class="item-actions">
 
                         <button
-                            class="small-button delete"
-                            onclick="deleteItem(
-                                'dinero',
-                                '${item.id}'
-                            )"
+                            class="small-button"
+                            onclick="
+                                editMovement(
+                                    '${movement.id}'
+                                )
+                            "
+                        >
+                            Editar
+                        </button>
+
+                        <button
+                            class="small-button"
+                            onclick="
+                                deleteMovement(
+                                    '${movement.id}'
+                                )
+                            "
                         >
                             Eliminar
                         </button>
@@ -597,68 +733,1346 @@ function renderMoney() {
 
                 </div>
 
-            `
+            </div>
+
+        `
         ).join("");
 
 }
 
+document
+    .getElementById(
+        "movementSearch"
+    )
+    .addEventListener(
+        "input",
+        renderMovements
+    );
 
-/* =========================================
-   MOVIMIENTOS
-========================================= */
+document
+    .getElementById(
+        "movementFilter"
+    )
+    .addEventListener(
+        "change",
+        renderMovements
+    );
 
-function renderMovements() {
+function editMovement(id) {
+
+    const movement =
+        data.movements.find(
+            item =>
+                item.id === id
+        );
+
+    if (!movement) {
+        return;
+    }
+
+    document.getElementById(
+        "movementId"
+    ).value =
+        movement.id;
+
+    document.getElementById(
+        "movementType"
+    ).value =
+        movement.type;
+
+    document.getElementById(
+        "movementDescription"
+    ).value =
+        movement.description;
+
+    document.getElementById(
+        "movementAmount"
+    ).value =
+        movement.amount;
+
+    document.getElementById(
+        "movementCategory"
+    ).value =
+        movement.category;
+
+    document.getElementById(
+        "movementDate"
+    ).value =
+        movement.date;
+
+    openModal(
+        "movementModal"
+    );
+
+}
+
+function deleteMovement(id) {
+
+    const confirmDelete =
+        confirm(
+            "¿Quieres eliminar este movimiento?"
+        );
+
+    if (!confirmDelete) {
+        return;
+    }
+
+    data.movements =
+        data.movements.filter(
+            item =>
+                item.id !== id
+        );
+
+    saveData();
+
+    renderAll();
+
+}
+
+document
+    .getElementById(
+        "addOwedButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            openDebtModal(
+                "owedToMe"
+            );
+
+        }
+    );
+
+document
+    .getElementById(
+        "addDebtButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            openDebtModal(
+                "iOwe"
+            );
+
+        }
+    );
+
+function openDebtModal(
+    type,
+    id = null
+) {
+
+    document.getElementById(
+        "debtForm"
+    ).reset();
+
+    document.getElementById(
+        "debtType"
+    ).value = type;
+
+    document.getElementById(
+        "debtId"
+    ).value = id || "";
+
+    if (id) {
+
+        const list =
+            type === "owedToMe"
+                ? data.owedToMe
+                : data.iOwe;
+
+        const debt =
+            list.find(
+                item =>
+                    item.id === id
+            );
+
+        if (debt) {
+
+            document.getElementById(
+                "debtPerson"
+            ).value =
+                debt.person;
+
+            document.getElementById(
+                "debtAmount"
+            ).value =
+                debt.saldo;
+
+            document.getElementById(
+                "debtDescription"
+            ).value =
+                debt.description || "";
+
+        }
+
+        document.getElementById(
+            "debtModalTitle"
+        ).textContent =
+            "Editar deuda";
+
+    } else {
+
+        document.getElementById(
+            "debtModalTitle"
+        ).textContent =
+            "Nueva deuda";
+
+    }
+
+    openModal(
+        "debtModal"
+    );
+
+}
+
+document
+    .getElementById(
+        "debtForm"
+    )
+    .addEventListener(
+        "submit",
+        event => {
+
+            event.preventDefault();
+
+            const id =
+                document.getElementById(
+                    "debtId"
+                ).value;
+
+            const type =
+                document.getElementById(
+                    "debtType"
+                ).value;
+
+            const person =
+                document.getElementById(
+                    "debtPerson"
+                ).value.trim();
+
+            const amount =
+                Number(
+                    document.getElementById(
+                        "debtAmount"
+                    ).value
+                );
+
+            const description =
+                document.getElementById(
+                    "debtDescription"
+                ).value.trim();
+
+            const list =
+                type === "owedToMe"
+                    ? data.owedToMe
+                    : data.iOwe;
+
+            if (id) {
+
+                const debt =
+                    list.find(
+                        item =>
+                            item.id === id
+                    );
+
+                if (debt) {
+
+                    debt.saldo =
+                        amount;
+
+                    debt.description =
+                        description;
+
+                    debt.person =
+                        person;
+
+                }
+
+            } else {
+
+                list.push({
+
+                    id:
+                        generateId(),
+
+                    person:
+                        person,
+
+                    montoOriginal:
+                        amount,
+
+                    saldo:
+                        amount,
+
+                    description:
+                        description,
+
+                    createdAt:
+                        new Date()
+                            .toISOString()
+
+                });
+
+            }
+
+            saveData();
+
+            closeModal(
+                "debtModal"
+            );
+
+            renderAll();
+
+        }
+    );
+
+function renderOwedToMe() {
 
     const container =
         document.getElementById(
-            "movementTable"
+            "owedList"
         );
 
+    const total =
+        data.owedToMe.reduce(
 
-    const search =
+            (sum, debt) =>
+                sum +
+                Number(
+                    debt.saldo
+                ),
+
+            0
+
+        );
+
+    document.getElementById(
+        "totalOwedToMe"
+    ).textContent =
+        formatMoney(total);
+
+    if (
+        data.owedToMe.length === 0
+    ) {
+
+        container.innerHTML = `
+
+            <div class="panel">
+
+                <div class="empty-state">
+
+                    No tienes registros
+                    de personas que te deban.
+
+                </div>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+    container.innerHTML =
+        data.owedToMe.map(
+            debt =>
+                createDebtCard(
+                    debt,
+                    "owedToMe"
+                )
+        ).join("");
+
+}
+
+function renderIOwe() {
+
+    const container =
         document.getElementById(
-            "movementSearch"
-        ).value.toLowerCase();
+            "debtList"
+        );
 
+    const total =
+        data.iOwe.reduce(
 
-    const filter =
-        document.getElementById(
-            "movementFilter"
-        ).value;
+            (sum, debt) =>
+                sum +
+                Number(
+                    debt.saldo
+                ),
 
+            0
 
-    let movements =
-        data.movimientos.filter(
-            item => {
+        );
 
-                const matchesSearch =
-                    item.descripcion
-                        .toLowerCase()
-                        .includes(
-                            search
-                        );
+    document.getElementById(
+        "totalIOwe"
+    ).textContent =
+        formatMoney(total);
 
+    if (
+        data.iOwe.length === 0
+    ) {
 
-                const matchesFilter =
-                    filter === "todos" ||
-                    item.tipo === filter;
+        container.innerHTML = `
 
+            <div class="panel">
 
-                return (
-                    matchesSearch &&
-                    matchesFilter
+                <div class="empty-state">
+
+                    No tienes registros
+                    de deudas pendientes.
+
+                </div>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+    container.innerHTML =
+        data.iOwe.map(
+            debt =>
+                createDebtCard(
+                    debt,
+                    "iOwe"
+                )
+        ).join("");
+
+}
+
+function createDebtCard(
+    debt,
+    type
+) {
+
+    const isPaid =
+        Number(
+            debt.saldo
+        ) <= 0;
+
+    const typeLabel =
+        type === "owedToMe"
+            ? "Me deben"
+            : "Debo";
+
+    return `
+
+        <div class="debt-card">
+
+            <div class="debt-card-header">
+
+                <div>
+
+                    <h3>
+                        ${escapeHTML(
+        debt.person
+    )}
+                    </h3>
+
+                    <span>
+                        ${typeLabel}
+                    </span>
+
+                </div>
+
+                <span class="
+                    debt-status
+                    ${isPaid
+            ? "paid"
+            : ""
+        }
+                ">
+
+                    ${isPaid
+            ? "Pagado"
+            : "Pendiente"
+        }
+
+                </span>
+
+            </div>
+
+            <p class="debt-description">
+
+                ${escapeHTML(
+            debt.description ||
+            "Sin descripción"
+        )}
+
+            </p>
+
+            <div class="debt-amounts">
+
+                <div class="amount-box">
+
+                    <span>
+                        Deuda original
+                    </span>
+
+                    <strong>
+                        ${formatMoney(
+            debt.montoOriginal
+        )}
+                    </strong>
+
+                </div>
+
+                <div class="amount-box">
+
+                    <span>
+                        Saldo pendiente
+                    </span>
+
+                    <strong>
+                        ${formatMoney(
+            debt.saldo
+        )}
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <div class="debt-actions">
+
+                <button
+                    class="pay-button"
+                    onclick="
+                        openPaymentModal(
+                            '${debt.id}',
+                            '${type}'
+                        )
+                    "
+                    ${isPaid
+            ? "disabled"
+            : ""
+        }
+                >
+
+                    ${type === "owedToMe"
+            ? "Registrar pago"
+            : "Registrar pago"
+        }
+
+                </button>
+
+                <button
+                    class="increase-button"
+                    onclick="
+                        openIncreaseDebtModal(
+                            '${debt.id}',
+                            '${type}'
+                        )
+                    "
+                >
+
+                    Aumentar deuda
+
+                </button>
+
+                <button
+                    onclick="
+                        openDebtModal(
+                            '${type}',
+                            '${debt.id}'
+                        )
+                    "
+                >
+
+                    Editar
+
+                </button>
+
+                <button
+                    onclick="
+                        deleteDebt(
+                            '${debt.id}',
+                            '${type}'
+                        )
+                    "
+                >
+
+                    Eliminar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+function openPaymentModal(
+    id,
+    type
+) {
+
+    const list =
+        type === "owedToMe"
+            ? data.owedToMe
+            : data.iOwe;
+
+    const debt =
+        list.find(
+            item =>
+                item.id === id
+        );
+
+    if (!debt) {
+        return;
+    }
+
+    document.getElementById(
+        "paymentDebtId"
+    ).value =
+        id;
+
+    document.getElementById(
+        "paymentDebtType"
+    ).value =
+        type;
+
+    document.getElementById(
+        "paymentCurrentBalance"
+    ).textContent =
+        formatMoney(
+            debt.saldo
+        );
+
+    document.getElementById(
+        "paymentAmount"
+    ).value = "";
+
+    document.getElementById(
+        "paymentModalTitle"
+    ).textContent =
+
+        type === "owedToMe"
+
+            ? `Pago recibido de ${debt.person}`
+
+            : `Pago realizado a ${debt.person}`;
+
+    openModal(
+        "paymentModal"
+    );
+
+}
+
+document
+    .getElementById(
+        "paymentForm"
+    )
+    .addEventListener(
+        "submit",
+        event => {
+
+            event.preventDefault();
+
+            const id =
+                document.getElementById(
+                    "paymentDebtId"
+                ).value;
+
+            const type =
+                document.getElementById(
+                    "paymentDebtType"
+                ).value;
+
+            const payment =
+                Number(
+                    document.getElementById(
+                        "paymentAmount"
+                    ).value
+                );
+
+            const list =
+                type === "owedToMe"
+                    ? data.owedToMe
+                    : data.iOwe;
+
+            const debt =
+                list.find(
+                    item =>
+                        item.id === id
+                );
+
+            if (!debt) {
+                return;
+            }
+
+            if (
+                payment <= 0
+            ) {
+
+                alert(
+                    "Ingresa un monto válido."
+                );
+
+                return;
+
+            }
+
+            if (
+                payment > debt.saldo
+            ) {
+
+                alert(
+                    "El pago no puede ser mayor al saldo pendiente."
+                );
+
+                return;
+
+            }
+
+            debt.saldo -= payment;
+
+            data.movements.unshift({
+
+                id:
+                    generateId(),
+
+                type:
+                    type === "owedToMe"
+                        ? "income"
+                        : "expense",
+
+                description:
+
+                    type === "owedToMe"
+
+                        ? `Pago recibido de ${debt.person}`
+
+                        : `Pago realizado a ${debt.person}`,
+
+                amount:
+                    payment,
+
+                category:
+                    "debt",
+
+                date:
+                    new Date()
+                        .toISOString()
+                        .split("T")[0]
+
+            });
+
+            saveData();
+
+            closeModal(
+                "paymentModal"
+            );
+
+            renderAll();
+
+        }
+    );
+
+function openIncreaseDebtModal(
+    id,
+    type
+) {
+
+    const list =
+        type === "owedToMe"
+            ? data.owedToMe
+            : data.iOwe;
+
+    const debt =
+        list.find(
+            item =>
+                item.id === id
+        );
+
+    if (!debt) {
+        return;
+    }
+
+    document.getElementById(
+        "increaseDebtId"
+    ).value =
+        id;
+
+    document.getElementById(
+        "increaseDebtType"
+    ).value =
+        type;
+
+    document.getElementById(
+        "increaseCurrentBalance"
+    ).textContent =
+        formatMoney(
+            debt.saldo
+        );
+
+    document.getElementById(
+        "increaseAmount"
+    ).value = "";
+
+    openModal(
+        "increaseDebtModal"
+    );
+
+}
+
+document
+    .getElementById(
+        "increaseDebtForm"
+    )
+    .addEventListener(
+        "submit",
+        event => {
+
+            event.preventDefault();
+
+            const id =
+                document.getElementById(
+                    "increaseDebtId"
+                ).value;
+
+            const type =
+                document.getElementById(
+                    "increaseDebtType"
+                ).value;
+
+            const amount =
+                Number(
+                    document.getElementById(
+                        "increaseAmount"
+                    ).value
+                );
+
+            const list =
+                type === "owedToMe"
+                    ? data.owedToMe
+                    : data.iOwe;
+
+            const debt =
+                list.find(
+                    item =>
+                        item.id === id
+                );
+
+            if (!debt) {
+                return;
+            }
+
+            if (
+                amount <= 0
+            ) {
+
+                alert(
+                    "Ingresa un monto válido."
+                );
+
+                return;
+
+            }
+
+            debt.saldo += amount;
+
+            debt.montoOriginal +=
+                amount;
+
+            saveData();
+
+            closeModal(
+                "increaseDebtModal"
+            );
+
+            renderAll();
+
+        }
+    );
+
+function deleteDebt(
+    id,
+    type
+) {
+
+    const confirmDelete =
+        confirm(
+            "¿Quieres eliminar este registro?"
+        );
+
+    if (!confirmDelete) {
+        return;
+    }
+
+    if (
+        type === "owedToMe"
+    ) {
+
+        data.owedToMe =
+            data.owedToMe.filter(
+                item =>
+                    item.id !== id
+            );
+
+    } else {
+
+        data.iOwe =
+            data.iOwe.filter(
+                item =>
+                    item.id !== id
+            );
+
+    }
+
+    saveData();
+
+    renderAll();
+
+}
+
+document
+    .getElementById(
+        "addGoalButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById(
+                    "goalForm"
+                )
+                .reset();
+
+            document
+                .getElementById(
+                    "goalId"
+                )
+                .value = "";
+
+            openModal(
+                "goalModal"
+            );
+
+        }
+    );
+
+document
+    .getElementById(
+        "goalForm"
+    )
+    .addEventListener(
+        "submit",
+        event => {
+
+            event.preventDefault();
+
+            const id =
+                document.getElementById(
+                    "goalId"
+                ).value;
+
+            const goal = {
+
+                id:
+                    id ||
+                    generateId(),
+
+                name:
+                    document.getElementById(
+                        "goalName"
+                    ).value.trim(),
+
+                target:
+                    Number(
+                        document.getElementById(
+                            "goalTarget"
+                        ).value
+                    ),
+
+                current:
+                    Number(
+                        document.getElementById(
+                            "goalCurrent"
+                        ).value
+                    )
+
+            };
+
+            if (id) {
+
+                const index =
+                    data.goals.findIndex(
+                        item =>
+                            item.id === id
+                    );
+
+                if (index !== -1) {
+
+                    data.goals[index] =
+                        goal;
+
+                }
+
+            } else {
+
+                data.goals.push(
+                    goal
                 );
 
             }
-        );
 
+            saveData();
 
-    movements.sort(
-        (a, b) =>
-            new Date(b.fecha) -
-            new Date(a.fecha)
+            closeModal(
+                "goalModal"
+            );
+
+            renderAll();
+
+        }
     );
 
+function renderGoals() {
+
+    const container =
+        document.getElementById(
+            "goalsList"
+        );
+
+    if (
+        data.goals.length === 0
+    ) {
+
+        container.innerHTML = `
+
+            <div class="panel">
+
+                <div class="empty-state">
+
+                    No tienes metas de ahorro.
+
+                </div>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+    container.innerHTML =
+        data.goals.map(
+            goal => {
+
+                const percentage =
+                    Math.min(
+
+                        (
+                            goal.current /
+                            goal.target
+                        ) * 100,
+
+                        100
+
+                    );
+
+                return `
+
+                    <div class="goal-card">
+
+                        <h3>
+                            ${escapeHTML(
+                    goal.name
+                )}
+                        </h3>
+
+                        <p>
+                            Progreso de ahorro
+                        </p>
+
+                        <div class="
+                            progress-container
+                        ">
+
+                            <div
+                                class="progress-bar"
+                                style="
+                                    width:
+                                    ${percentage}%
+                                "
+                            ></div>
+
+                        </div>
+
+                        <div class="goal-footer">
+
+                            <strong>
+                                ${formatMoney(
+                    goal.current
+                )}
+                            </strong>
+
+                            <span>
+                                de
+                                ${formatMoney(
+                    goal.target
+                )}
+                            </span>
+
+                        </div>
+
+                        <div class="goal-actions">
+
+                            <button
+                                class="small-button"
+                                onclick="
+                                    editGoal(
+                                        '${goal.id}'
+                                    )
+                                "
+                            >
+                                Editar
+                            </button>
+
+                            <button
+                                class="small-button"
+                                onclick="
+                                    deleteGoal(
+                                        '${goal.id}'
+                                    )
+                                "
+                            >
+                                Eliminar
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            }
+        ).join("");
+
+}
+
+function editGoal(id) {
+
+    const goal =
+        data.goals.find(
+            item =>
+                item.id === id
+        );
+
+    if (!goal) {
+        return;
+    }
+
+    document.getElementById(
+        "goalId"
+    ).value =
+        goal.id;
+
+    document.getElementById(
+        "goalName"
+    ).value =
+        goal.name;
+
+    document.getElementById(
+        "goalTarget"
+    ).value =
+        goal.target;
+
+    document.getElementById(
+        "goalCurrent"
+    ).value =
+        goal.current;
+
+    openModal(
+        "goalModal"
+    );
+
+}
+
+function deleteGoal(id) {
+
+    if (
+        !confirm(
+            "¿Eliminar esta meta?"
+        )
+    ) {
+
+        return;
+
+    }
+
+    data.goals =
+        data.goals.filter(
+            item =>
+                item.id !== id
+        );
+
+    saveData();
+
+    renderAll();
+
+}
+
+function calculateFinancials() {
+
+    let income = 0;
+
+    let expenses = 0;
+
+    data.movements.forEach(
+        movement => {
+
+            if (
+                movement.type === "income"
+            ) {
+
+                income +=
+                    Number(
+                        movement.amount
+                    );
+
+            } else {
+
+                expenses +=
+                    Number(
+                        movement.amount
+                    );
+
+            }
+
+        }
+    );
+
+    const available =
+        income - expenses;
+
+    const owedToMe =
+        data.owedToMe.reduce(
+
+            (sum, debt) =>
+                sum +
+                Number(
+                    debt.saldo
+                ),
+
+            0
+
+        );
+
+    const iOwe =
+        data.iOwe.reduce(
+
+            (sum, debt) =>
+                sum +
+                Number(
+                    debt.saldo
+                ),
+
+            0
+
+        );
+
+    return {
+
+        income,
+
+        expenses,
+
+        available,
+
+        owedToMe,
+
+        iOwe,
+
+        debtBalance:
+            owedToMe - iOwe
+
+    };
+
+}
+
+function renderDashboard() {
+
+    const financials =
+        calculateFinancials();
+
+    document.getElementById(
+        "availableMoney"
+    ).textContent =
+        formatMoney(
+            financials.available
+        );
+
+    document.getElementById(
+        "totalIncome"
+    ).textContent =
+        formatMoney(
+            financials.income
+        );
+
+    document.getElementById(
+        "totalExpenses"
+    ).textContent =
+        formatMoney(
+            financials.expenses
+        );
+
+    document.getElementById(
+        "debtBalance"
+    ).textContent =
+        formatMoney(
+            financials.debtBalance
+        );
+
+    document.getElementById(
+        "dashboardOwedToMe"
+    ).textContent =
+        formatMoney(
+            financials.owedToMe
+        );
+
+    document.getElementById(
+        "dashboardIOwe"
+    ).textContent =
+        formatMoney(
+            financials.iOwe
+        );
+
+    document.getElementById(
+        "dashboardDebtBalance"
+    ).textContent =
+        formatMoney(
+            financials.debtBalance
+        );
+
+    renderRecentMovements();
+
+}
+
+function renderRecentMovements() {
+
+    const container =
+        document.getElementById(
+            "recentMovements"
+        );
+
+    const movements =
+        data.movements.slice(
+            0,
+            5
+        );
 
     if (
         movements.length === 0
@@ -678,1576 +2092,460 @@ function renderMovements() {
 
     }
 
-
-    container.innerHTML = `
-
-        <table>
-
-            <thead>
-
-                <tr>
-
-                    <th>
-                        DESCRIPCIÓN
-                    </th>
-
-                    <th>
-                        TIPO
-                    </th>
-
-                    <th>
-                        CATEGORÍA
-                    </th>
-
-                    <th>
-                        FECHA
-                    </th>
-
-                    <th>
-                        MONTO
-                    </th>
-
-                    <th>
-                        ACCIONES
-                    </th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                ${movements.map(
-        item => `
-
-                        <tr>
-
-                            <td>
-                                <strong>
-                                    ${item.descripcion}
-                                </strong>
-                            </td>
-
-                            <td>
-
-                                <span
-                                    class="badge ${item.tipo === "ingreso"
-                ? "badge-income"
-                : "badge-expense"
-            }"
-                                >
-
-                                    ${item.tipo === "ingreso"
-                ? "Ingreso"
-                : "Gasto"
-            }
-
-                                </span>
-
-                            </td>
-
-                            <td>
-                                ${item.categoria}
-                            </td>
-
-                            <td>
-                                ${formatDate(
-                item.fecha
-            )}
-                            </td>
-
-                            <td>
-
-                                <strong
-                                    class="${item.tipo === "ingreso"
-                ? "positive"
-                : "negative"
-            }"
-                                >
-
-                                    ${item.tipo === "ingreso"
-                ? "+"
-                : "-"
-            }
-
-                                    ${formatMoney(
-                item.monto
-            )}
-
-                                </strong>
-
-                            </td>
-
-                            <td>
-
-                                <button
-                                    class="small-button delete"
-                                    onclick="deleteItem(
-                                        'movimientos',
-                                        '${item.id}'
-                                    )"
-                                >
-                                    Eliminar
-                                </button>
-
-                            </td>
-
-                        </tr>
-
-                    `
-    ).join("")}
-
-            </tbody>
-
-        </table>
-
-    `;
-
-}
-
-
-/* =========================================
-   ME DEBEN
-========================================= */
-
-function renderReceivables() {
-
-    const container =
-        document.getElementById(
-            "receivableList"
-        );
-
-
-    const total =
-        data.meDeben.reduce(
-            (sum, item) =>
-                sum +
-                Number(item.monto),
-            0
-        );
-
-
-    document.getElementById(
-        "receivableTotal"
-    ).textContent =
-        formatMoney(
-            total
-        );
-
-
-    if (
-        data.meDeben.length === 0
-    ) {
-
-        container.innerHTML = `
-
-            <div class="empty-state">
-
-                No tienes cuentas por cobrar.
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
     container.innerHTML =
-        data.meDeben.map(
-            item => `
+        movements.map(
+            movement => `
 
-                <div class="info-card">
+            <div class="movement-item">
 
-                    <h3>
-                        ${item.persona}
-                    </h3>
+                <div class="movement-info">
 
-                    <p>
-                        ${item.descripcion}
-                    </p>
+                    <div class="
+                        movement-icon
+                        ${movement.type}
+                    ">
 
-                    <div class="amount positive">
-
-                        ${formatMoney(
-                item.monto
-            )}
-
-                    </div>
-
-                    <p>
-                        ${formatDate(
-                item.fecha
-            )}
-                    </p>
-
-                    <div class="card-actions">
-
-                        <button
-                            class="small-button delete"
-                            onclick="deleteItem(
-                                'meDeben',
-                                '${item.id}'
-                            )"
-                        >
-                            Eliminar
-                        </button>
-
-                    </div>
-
-                </div>
-
-            `
-        ).join("");
-
-}
-
-
-/* =========================================
-   DEBO
-========================================= */
-
-function renderDebts() {
-
-    const container =
-        document.getElementById(
-            "debtList"
-        );
-
-
-    const total =
-        data.debo.reduce(
-            (sum, item) =>
-                sum +
-                Number(item.monto),
-            0
-        );
-
-
-    document.getElementById(
-        "debtTotal"
-    ).textContent =
-        formatMoney(
-            total
-        );
-
-
-    if (
-        data.debo.length === 0
-    ) {
-
-        container.innerHTML = `
-
-            <div class="empty-state">
-
-                No tienes deudas registradas.
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        data.debo.map(
-            item => `
-
-                <div class="info-card">
-
-                    <h3>
-                        ${item.persona}
-                    </h3>
-
-                    <p>
-                        ${item.descripcion}
-                    </p>
-
-                    <div class="amount negative">
-
-                        ${formatMoney(
-                item.monto
-            )}
-
-                    </div>
-
-                    <p>
-                        ${formatDate(
-                item.fecha
-            )}
-                    </p>
-
-                    <div class="card-actions">
-
-                        <button
-                            class="small-button delete"
-                            onclick="deleteItem(
-                                'debo',
-                                '${item.id}'
-                            )"
-                        >
-                            Eliminar
-                        </button>
-
-                    </div>
-
-                </div>
-
-            `
-        ).join("");
-
-}
-
-
-/* =========================================
-   METAS
-========================================= */
-
-function renderGoals() {
-
-    const container =
-        document.getElementById(
-            "goalsList"
-        );
-
-
-    if (
-        data.metas.length === 0
-    ) {
-
-        container.innerHTML = `
-
-            <div class="empty-state">
-
-                No tienes metas creadas.
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        data.metas.map(
-            goal => {
-
-                const percentage =
-                    Math.min(
-                        (
-                            Number(goal.ahorrado) /
-                            Number(goal.objetivo)
-                        ) * 100,
-                        100
-                    );
-
-
-                return `
-
-                    <div class="info-card">
-
-                        <h3>
-                            ${goal.nombre}
-                        </h3>
-
-                        <div class="amount">
-
-                            ${percentage.toFixed(0)}%
-
-                        </div>
-
-                        <div class="progress-bar">
-
-                            <div
-                                class="progress-fill"
-                                style="
-                                    width:
-                                    ${percentage}%
-                                "
-                            ></div>
-
-                        </div>
-
-                        <div class="goal-values">
-
-                            <span>
-                                ${formatMoney(
-                    goal.ahorrado
-                )}
-                            </span>
-
-                            <span>
-                                ${formatMoney(
-                    goal.objetivo
-                )}
-                            </span>
-
-                        </div>
-
-                        <div class="card-actions">
-
-                            <button
-                                class="small-button delete"
-                                onclick="deleteItem(
-                                    'metas',
-                                    '${goal.id}'
-                                )"
-                            >
-                                Eliminar
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                `;
-
-            }
-        ).join("");
-
-}
-
-
-/* =========================================
-   METAS DASHBOARD
-========================================= */
-
-function renderDashboardGoals() {
-
-    const container =
-        document.getElementById(
-            "dashboardGoals"
-        );
-
-
-    const goals =
-        data.metas.slice(
-            0,
-            3
-        );
-
-
-    if (
-        goals.length === 0
-    ) {
-
-        container.innerHTML = `
-
-            <div class="empty-state">
-
-                Todavía no tienes metas de ahorro.
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        goals.map(
-            goal => {
-
-                const percentage =
-                    Math.min(
-                        (
-                            goal.ahorrado /
-                            goal.objetivo
-                        ) * 100,
-                        100
-                    );
-
-
-                return `
-
-                    <div class="goal-item">
-
-                        <div class="goal-item-header">
-
-                            <h4>
-                                ${goal.nombre}
-                            </h4>
-
-                            <span>
-                                ${percentage.toFixed(0)}%
-                            </span>
-
-                        </div>
-
-                        <div class="progress-bar">
-
-                            <div
-                                class="progress-fill"
-                                style="
-                                    width:
-                                    ${percentage}%
-                                "
-                            ></div>
-
-                        </div>
-
-                        <div class="goal-values">
-
-                            <span>
-                                ${formatMoney(
-                    goal.ahorrado
-                )}
-                            </span>
-
-                            <span>
-                                ${formatMoney(
-                    goal.objetivo
-                )}
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                `;
-
-            }
-        ).join("");
-
-}
-
-
-/* =========================================
-   MODAL
-========================================= */
-
-const modalOverlay =
-    document.getElementById(
-        "modalOverlay"
-    );
-
-
-const modalTitle =
-    document.getElementById(
-        "modalTitle"
-    );
-
-
-const formFields =
-    document.getElementById(
-        "formFields"
-    );
-
-
-function openModal(type) {
-
-    currentModalType =
-        type;
-
-    editingId =
-        null;
-
-
-    const configs = {
-
-        dinero: {
-
-            title:
-                "Agregar dinero inicial",
-
-            fields: `
-
-                <div class="form-group">
-
-                    <label>
-                        Nombre
-                    </label>
-
-                    <input
-                        name="nombre"
-                        placeholder="Ej. Cuenta BCP"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Tipo
-                    </label>
-
-                    <select name="tipo">
-
-                        <option>
-                            Efectivo
-                        </option>
-
-                        <option>
-                            Cuenta bancaria
-                        </option>
-
-                        <option>
-                            Billetera digital
-                        </option>
-
-                        <option>
-                            Otro
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Monto
-                    </label>
-
-                    <input
-                        type="number"
-                        name="monto"
-                        min="0"
-                        step="0.01"
-                        required
-                    >
-
-                </div>
-
-            `
-
-        },
-
-
-        movimientos: {
-
-            title:
-                "Nuevo movimiento",
-
-            fields: `
-
-                <div class="form-group">
-
-                    <label>
-                        Tipo
-                    </label>
-
-                    <select
-                        name="tipo"
-                        required
-                    >
-
-                        <option value="ingreso">
-                            Ingreso
-                        </option>
-
-                        <option value="gasto">
-                            Gasto
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Descripción
-                    </label>
-
-                    <input
-                        name="descripcion"
-                        placeholder="Ej. Sueldo"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Categoría
-                    </label>
-
-                    <input
-                        name="categoria"
-                        placeholder="Ej. Trabajo"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Monto
-                    </label>
-
-                    <input
-                        type="number"
-                        name="monto"
-                        min="0"
-                        step="0.01"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Fecha
-                    </label>
-
-                    <input
-                        type="date"
-                        name="fecha"
-                        required
-                    >
-
-                </div>
-
-            `
-
-        },
-
-
-        meDeben: {
-
-            title:
-                "Registrar dinero que te deben",
-
-            fields: `
-
-                <div class="form-group">
-
-                    <label>
-                        Persona
-                    </label>
-
-                    <input
-                        name="persona"
-                        placeholder="Nombre"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Descripción
-                    </label>
-
-                    <input
-                        name="descripcion"
-                        placeholder="Ej. Préstamo"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Monto
-                    </label>
-
-                    <input
-                        type="number"
-                        name="monto"
-                        min="0"
-                        step="0.01"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Fecha
-                    </label>
-
-                    <input
-                        type="date"
-                        name="fecha"
-                        required
-                    >
-
-                </div>
-
-            `
-
-        },
-
-
-        debo: {
-
-            title:
-                "Registrar deuda",
-
-            fields: `
-
-                <div class="form-group">
-
-                    <label>
-                        Persona o empresa
-                    </label>
-
-                    <input
-                        name="persona"
-                        placeholder="Nombre"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Descripción
-                    </label>
-
-                    <input
-                        name="descripcion"
-                        placeholder="Ej. Préstamo"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Monto
-                    </label>
-
-                    <input
-                        type="number"
-                        name="monto"
-                        min="0"
-                        step="0.01"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Fecha
-                    </label>
-
-                    <input
-                        type="date"
-                        name="fecha"
-                        required
-                    >
-
-                </div>
-
-            `
-
-        },
-
-
-        metas: {
-
-            title:
-                "Nueva meta de ahorro",
-
-            fields: `
-
-                <div class="form-group">
-
-                    <label>
-                        Nombre de la meta
-                    </label>
-
-                    <input
-                        name="nombre"
-                        placeholder="Ej. Comprar laptop"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Objetivo
-                    </label>
-
-                    <input
-                        type="number"
-                        name="objetivo"
-                        min="1"
-                        step="0.01"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Dinero ahorrado
-                    </label>
-
-                    <input
-                        type="number"
-                        name="ahorrado"
-                        min="0"
-                        step="0.01"
-                        value="0"
-                        required
-                    >
-
-                </div>
-
-            `
-
-        }
-
-    };
-
-
-    const config =
-        configs[type];
-
-
-    modalTitle.textContent =
-        config.title;
-
-
-    formFields.innerHTML =
-        config.fields;
-
-
-    if (
-        type === "movimientos" ||
-        type === "meDeben" ||
-        type === "debo"
-    ) {
-
-        const dateInput =
-            formFields.querySelector(
-                '[name="fecha"]'
-            );
-
-
-        dateInput.value =
-            new Date()
-                .toISOString()
-                .split("T")[0];
-
-    }
-
-
-    modalOverlay.classList.add(
-        "active"
-    );
-
-}
-
-
-function closeModal() {
-
-    modalOverlay.classList.remove(
-        "active"
-    );
-
-    currentModalType =
-        null;
-
-    editingId =
-        null;
-
-}
-
-
-/* =========================================
-   GUARDAR FORMULARIO
-========================================= */
-
-document.getElementById(
-    "modalForm"
-).addEventListener(
-    "submit",
-    event => {
-
-        event.preventDefault();
-
-
-        const formData =
-            new FormData(
-                event.target
-            );
-
-
-        const values =
-            Object.fromEntries(
-                formData.entries()
-            );
-
-
-        values.id =
-            generateId();
-
-
-        if (
-            values.monto
-        ) {
-
-            values.monto =
-                Number(
-                    values.monto
-                );
-
-        }
-
-
-        if (
-            values.objetivo
-        ) {
-
-            values.objetivo =
-                Number(
-                    values.objetivo
-                );
-
-        }
-
-
-        if (
-            values.ahorrado
-        ) {
-
-            values.ahorrado =
-                Number(
-                    values.ahorrado
-                );
-
-        }
-
-
-        data[
-            currentModalType
-        ].push(
-            values
-        );
-
-
-        saveData();
-
-
-        updateAll();
-
-
-        closeModal();
-
-    }
-);
-
-
-/* =========================================
-   ELIMINAR
-========================================= */
-
-function deleteItem(
-    collection,
-    id
-) {
-
-    const confirmed =
-        confirm(
-            "¿Seguro que deseas eliminar este registro?"
-        );
-
-
-    if (!confirmed) return;
-
-
-    data[collection] =
-        data[collection].filter(
-            item =>
-                item.id !== id
-        );
-
-
-    saveData();
-
-
-    updateAll();
-
-}
-
-
-/* =========================================
-   BOTONES
-========================================= */
-
-document.getElementById(
-    "addMoneyButton"
-).addEventListener(
-    "click",
-    () => openModal("dinero")
-);
-
-
-document.getElementById(
-    "addMovementButton"
-).addEventListener(
-    "click",
-    () => openModal("movimientos")
-);
-
-
-document.getElementById(
-    "quickMovementButton"
-).addEventListener(
-    "click",
-    () => openModal("movimientos")
-);
-
-
-document.getElementById(
-    "addReceivableButton"
-).addEventListener(
-    "click",
-    () => openModal("meDeben")
-);
-
-
-document.getElementById(
-    "addDebtButton"
-).addEventListener(
-    "click",
-    () => openModal("debo")
-);
-
-
-document.getElementById(
-    "addGoalButton"
-).addEventListener(
-    "click",
-    () => openModal("metas")
-);
-
-
-document.getElementById(
-    "modalClose"
-).addEventListener(
-    "click",
-    closeModal
-);
-
-
-document.getElementById(
-    "cancelModal"
-).addEventListener(
-    "click",
-    closeModal
-);
-
-
-modalOverlay.addEventListener(
-    "click",
-    event => {
-
-        if (
-            event.target ===
-            modalOverlay
-        ) {
-
-            closeModal();
-
-        }
-
-    }
-);
-
-
-/* =========================================
-   FILTROS
-========================================= */
-
-document.getElementById(
-    "movementSearch"
-).addEventListener(
-    "input",
-    renderMovements
-);
-
-
-document.getElementById(
-    "movementFilter"
-).addEventListener(
-    "change",
-    renderMovements
-);
-
-
-/* =========================================
-   MODO OSCURO
-========================================= */
-
-const themeButton =
-    document.getElementById(
-        "themeButton"
-    );
-
-
-const savedTheme =
-    localStorage.getItem(
-        "redFinanceTheme"
-    );
-
-
-if (
-    savedTheme === "dark"
-) {
-
-    document.body.classList.add(
-        "dark-mode"
-    );
-
-    themeButton.textContent =
-        "☀";
-
-}
-
-
-themeButton.addEventListener(
-    "click",
-    () => {
-
-        document.body.classList.toggle(
-            "dark-mode"
-        );
-
-
-        const isDark =
-            document.body.classList.contains(
-                "dark-mode"
-            );
-
-
-        localStorage.setItem(
-            "redFinanceTheme",
-            isDark
-                ? "dark"
-                : "light"
-        );
-
-
-        themeButton.textContent =
-            isDark
-                ? "☀"
-                : "☾";
-
-    }
-);
-
-
-/* =========================================
-   MENÚ MOBILE
-========================================= */
-
-const mobileMenu =
-    document.getElementById(
-        "mobileMenu"
-    );
-
-
-const sidebar =
-    document.getElementById(
-        "sidebar"
-    );
-
-
-const sidebarOverlay =
-    document.getElementById(
-        "sidebarOverlay"
-    );
-
-
-mobileMenu.addEventListener(
-    "click",
-    () => {
-
-        sidebar.classList.add(
-            "open"
-        );
-
-        sidebarOverlay.classList.add(
-            "active"
-        );
-
-    }
-);
-
-
-sidebarOverlay.addEventListener(
-    "click",
-    closeMobileMenu
-);
-
-
-function closeMobileMenu() {
-
-    sidebar.classList.remove(
-        "open"
-    );
-
-    sidebarOverlay.classList.remove(
-        "active"
-    );
-
-}
-
-
-/* =========================================
-   EXPORTAR JSON
-========================================= */
-
-document.getElementById(
-    "exportDataButton"
-).addEventListener(
-    "click",
-    () => {
-
-        const json =
-            JSON.stringify(
-                data,
-                null,
-                4
-            );
-
-
-        const blob =
-            new Blob(
-                [json],
-                {
-                    type:
-                        "application/json"
+                        ${movement.type === "income"
+                    ? "↑"
+                    : "↓"
                 }
-            );
 
+                    </div>
 
-        const url =
-            URL.createObjectURL(
-                blob
-            );
+                    <div>
 
+                        <h4>
+                            ${escapeHTML(
+                    movement.description
+                )}
+                        </h4>
 
-        const link =
-            document.createElement(
-                "a"
-            );
+                        <span>
+                            ${formatDate(
+                    movement.date
+                )}
+                        </span>
 
+                    </div>
 
-        link.href =
-            url;
+                </div>
 
+                <strong class="
+                    movement-amount
+                    ${movement.type}
+                ">
 
-        link.download =
-            "redfinance-backup.json";
+                    ${movement.type === "income"
+                    ? "+"
+                    : "-"
+                }
 
+                    ${formatMoney(
+                    movement.amount
+                )}
 
-        link.click();
+                </strong>
 
+            </div>
 
-        URL.revokeObjectURL(
-            url
+        `
+        ).join("");
+
+}
+
+let incomeExpenseChart = null;
+
+let distributionChart = null;
+
+function updateCharts() {
+
+    const financials =
+        calculateFinancials();
+
+    const ctx1 =
+        document.getElementById(
+            "incomeExpenseChart"
         );
 
-    }
-);
+    if (incomeExpenseChart) {
 
-
-/* =========================================
-   IMPORTAR JSON
-========================================= */
-
-document.getElementById(
-    "importDataButton"
-).addEventListener(
-    "click",
-    () => {
-
-        document.getElementById(
-            "importDataInput"
-        ).click();
+        incomeExpenseChart.destroy();
 
     }
-);
 
+    incomeExpenseChart =
+        new Chart(
+            ctx1,
+            {
 
-document.getElementById(
-    "importDataInput"
-).addEventListener(
-    "change",
-    event => {
+                type: "bar",
 
-        const file =
-            event.target.files[0];
+                data: {
 
+                    labels: [
+                        "Ingresos",
+                        "Gastos"
+                    ],
 
-        if (!file) return;
+                    datasets: [
 
+                        {
 
-        const reader =
-            new FileReader();
+                            label:
+                                "Soles",
 
+                            data: [
 
-        reader.onload =
-            function () {
+                                financials.income,
 
-                try {
+                                financials.expenses
 
-                    const importedData =
-                        JSON.parse(
-                            reader.result
-                        );
+                            ],
 
+                            backgroundColor: [
 
-                    if (
-                        !importedData.dinero ||
-                        !importedData.movimientos ||
-                        !importedData.meDeben ||
-                        !importedData.debo ||
-                        !importedData.metas
-                    ) {
+                                "#18a558",
 
-                        throw new Error();
+                                "#e50914"
+
+                            ],
+
+                            borderRadius: 8
+
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio:
+                        false,
+
+                    plugins: {
+
+                        legend: {
+
+                            display: false
+
+                        }
 
                     }
 
-
-                    data =
-                        importedData;
-
-
-                    saveData();
-
-
-                    updateAll();
-
-
-                    alert(
-                        "Datos importados correctamente."
-                    );
-
-                }
-                catch {
-
-                    alert(
-                        "El archivo JSON no es válido."
-                    );
-
                 }
 
-            };
-
-
-        reader.readAsText(
-            file
+            }
         );
 
-    }
-);
-
-
-/* =========================================
-   BORRAR DATOS
-========================================= */
-
-document.getElementById(
-    "clearDataButton"
-).addEventListener(
-    "click",
-    () => {
-
-        const confirmed =
-            confirm(
-                "Esta acción eliminará todos tus datos. ¿Continuar?"
-            );
-
-
-        if (!confirmed) return;
-
-
-        data = {
-
-            dinero: [],
-
-            movimientos: [],
-
-            meDeben: [],
-
-            debo: [],
-
-            metas: []
-
-        };
-
-
-        saveData();
-
-
-        updateAll();
-
-
-        alert(
-            "Todos los datos fueron eliminados."
+    const ctx2 =
+        document.getElementById(
+            "distributionChart"
         );
 
+    if (distributionChart) {
+
+        distributionChart.destroy();
+
     }
-);
 
+    distributionChart =
+        new Chart(
+            ctx2,
+            {
 
-/* =========================================
-   ACTUALIZAR TODA LA INTERFAZ
-========================================= */
+                type: "doughnut",
 
-function updateAll() {
+                data: {
 
-    updateDashboard();
+                    labels: [
 
-    renderMoney();
+                        "Disponible",
 
-    renderMovements();
+                        "Me deben",
 
-    renderReceivables();
+                        "Debo"
 
-    renderDebts();
+                    ],
 
-    renderGoals();
+                    datasets: [
+
+                        {
+
+                            data: [
+
+                                Math.max(
+                                    financials.available,
+                                    0
+                                ),
+
+                                financials.owedToMe,
+
+                                financials.iOwe
+
+                            ],
+
+                            backgroundColor: [
+
+                                "#0b0b0d",
+
+                                "#18a558",
+
+                                "#e50914"
+
+                            ]
+
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio:
+                        false
+
+                }
+
+            }
+        );
 
 }
 
+function renderStatistics() {
 
-/* =========================================
-   INICIAR APLICACIÓN
-========================================= */
+    document.getElementById(
+        "statMovementCount"
+    ).textContent =
+        data.movements.length;
 
-updateAll();
+    document.getElementById(
+        "statOwedCount"
+    ).textContent =
+        data.owedToMe.length;
+
+    document.getElementById(
+        "statDebtCount"
+    ).textContent =
+        data.iOwe.length;
+
+    document.getElementById(
+        "statGoalCount"
+    ).textContent =
+        data.goals.length;
+
+}
+
+document
+    .getElementById(
+        "exportDataButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const json =
+                JSON.stringify(
+                    data,
+                    null,
+                    4
+                );
+
+            const blob =
+                new Blob(
+                    [json],
+                    {
+                        type:
+                            "application/json"
+                    }
+                );
+
+            const url =
+                URL.createObjectURL(
+                    blob
+                );
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+            link.href = url;
+
+            link.download =
+                `redfinance-backup-${new Date()
+                    .toISOString()
+                    .split("T")[0]
+                }.json`;
+
+            link.click();
+
+            URL.revokeObjectURL(
+                url
+            );
+
+        }
+    );
+
+document
+    .getElementById(
+        "importDataInput"
+    )
+    .addEventListener(
+        "change",
+        event => {
+
+            const file =
+                event.target.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            const reader =
+                new FileReader();
+
+            reader.onload =
+                event => {
+
+                    try {
+
+                        const imported =
+                            JSON.parse(
+                                event.target.result
+                            );
+
+                        data = {
+
+                            ...defaultData,
+
+                            ...imported
+
+                        };
+
+                        saveData();
+
+                        renderAll();
+
+                        alert(
+                            "Datos importados correctamente."
+                        );
+
+                    } catch (error) {
+
+                        alert(
+                            "El archivo JSON no es válido."
+                        );
+
+                    }
+
+                };
+
+            reader.readAsText(
+                file
+            );
+
+        }
+    );
+
+document
+    .getElementById(
+        "clearDataButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const confirmDelete =
+                confirm(
+                    "¿Estás seguro? Se eliminarán todos tus datos."
+                );
+
+            if (!confirmDelete) {
+                return;
+            }
+
+            data = {
+
+                ...defaultData,
+
+                movements: [],
+
+                owedToMe: [],
+
+                iOwe: [],
+
+                goals: []
+
+            };
+
+            saveData();
+
+            renderAll();
+
+            alert(
+                "Todos los datos han sido eliminados."
+            );
+
+        }
+    );
+
+function escapeHTML(value) {
+
+    return String(
+        value || ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+function renderAll() {
+
+    renderDashboard();
+
+    renderMovements();
+
+    renderOwedToMe();
+
+    renderIOwe();
+
+    renderGoals();
+
+    renderStatistics();
+
+    updateCharts();
+
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        renderAll();
+
+    }
+);

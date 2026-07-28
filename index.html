@@ -1,521 +1,1323 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RedFinance - Gestión Financiera</title>
 
-    <title>RedFinance | Control Financiero</title>
+    <link rel="stylesheet" href="styles.css">
 
-    <link rel="stylesheet" href="styles.css" />
-  </head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 
-  <body>
-    <!-- ============================= -->
-    <!-- SIDEBAR -->
-    <!-- ============================= -->
+<body>
 
     <aside class="sidebar" id="sidebar">
-      <div class="brand">
-        <div class="brand-logo">RF</div>
 
-        <div class="brand-text">
-          <h2>RedFinance</h2>
-          <span>Control financiero</span>
+        <div class="logo-container">
+            <div class="logo-icon">R</div>
+
+            <div>
+                <h2>RedFinance</h2>
+                <span>Control financiero</span>
+            </div>
         </div>
-      </div>
 
-      <nav class="sidebar-nav">
-        <p class="nav-title">PRINCIPAL</p>
+        <nav class="navigation">
 
-        <button class="nav-item active" data-section="dashboard">
-          <span class="nav-icon">▦</span>
-          <span>Dashboard</span>
-        </button>
+            <button
+                class="nav-item active"
+                data-section="dashboard"
+            >
+                <span class="nav-icon">⌂</span>
+                <span>Dashboard</span>
+            </button>
 
-        <button class="nav-item" data-section="dinero">
-          <span class="nav-icon">S/</span>
-          <span>Mi dinero</span>
-        </button>
+            <button
+                class="nav-item"
+                data-section="movimientos"
+            >
+                <span class="nav-icon">↕</span>
+                <span>Movimientos</span>
+            </button>
 
-        <button class="nav-item" data-section="movimientos">
-          <span class="nav-icon">↕</span>
-          <span>Movimientos</span>
-        </button>
+            <button
+                class="nav-item"
+                data-section="meDeben"
+            >
+                <span class="nav-icon">↑</span>
+                <span>Me deben</span>
+            </button>
 
-        <p class="nav-title">FINANZAS</p>
+            <button
+                class="nav-item"
+                data-section="debo"
+            >
+                <span class="nav-icon">↓</span>
+                <span>Debo</span>
+            </button>
 
-        <button class="nav-item" data-section="meDeben">
-          <span class="nav-icon">↓</span>
-          <span>Me deben</span>
-        </button>
+            <button
+                class="nav-item"
+                data-section="metas"
+            >
+                <span class="nav-icon">★</span>
+                <span>Metas de ahorro</span>
+            </button>
 
-        <button class="nav-item" data-section="debo">
-          <span class="nav-icon">↑</span>
-          <span>Debo</span>
-        </button>
+            <button
+                class="nav-item"
+                data-section="estadisticas"
+            >
+                <span class="nav-icon">▥</span>
+                <span>Estadísticas</span>
+            </button>
 
-        <button class="nav-item" data-section="metas">
-          <span class="nav-icon">◎</span>
-          <span>Metas de ahorro</span>
-        </button>
+        </nav>
 
-        <p class="nav-title">SISTEMA</p>
+        <div class="sidebar-bottom">
 
-        <button class="nav-item" data-section="administracion">
-          <span class="nav-icon">⚙</span>
-          <span>Administración</span>
-        </button>
-      </nav>
+            <button
+                class="nav-item"
+                data-section="configuracion"
+            >
+                <span class="nav-icon">⚙</span>
+                <span>Configuración</span>
+            </button>
 
-      <div class="sidebar-bottom">
-        <div class="user-card">
-          <div class="user-avatar">U</div>
+            <button
+                class="nav-item theme-button"
+                id="themeToggle"
+            >
+                <span class="nav-icon">☾</span>
+                <span>Modo oscuro</span>
+            </button>
 
-          <div>
-            <strong>Mi cuenta</strong>
-            <span>Finanzas personales</span>
-          </div>
         </div>
-      </div>
+
     </aside>
 
-    <!-- ============================= -->
-    <!-- OVERLAY MOBILE -->
-    <!-- ============================= -->
-
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <!-- ============================= -->
-    <!-- MAIN -->
-    <!-- ============================= -->
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+    ></div>
 
     <main class="main-content">
-      <!-- HEADER -->
 
-      <header class="topbar">
-        <button class="mobile-menu" id="mobileMenu">☰</button>
+        <header class="topbar">
 
-        <div class="page-heading">
-          <span class="page-label"> CONTROL FINANCIERO </span>
+            <button
+                class="mobile-menu-button"
+                id="mobileMenuButton"
+            >
+                ☰
+            </button>
 
-          <h1 id="pageTitle">Dashboard</h1>
-        </div>
+            <div class="page-title">
 
-        <div class="topbar-actions">
-          <button class="theme-button" id="themeButton" title="Cambiar tema">
-            ☾
-          </button>
-        </div>
-      </header>
+                <h1 id="pageTitle">
+                    Dashboard
+                </h1>
 
-      <!-- ============================= -->
-      <!-- DASHBOARD -->
-      <!-- ============================= -->
+                <p id="pageSubtitle">
+                    Resumen general de tus finanzas
+                </p>
 
-      <section class="content-section active" id="dashboard">
-        <div class="welcome-row">
-          <div>
-            <span class="section-kicker"> RESUMEN GENERAL </span>
-
-            <h2>Tu situación financiera</h2>
-
-            <p>
-              Controla tus ingresos, gastos y objetivos desde un solo lugar.
-            </p>
-          </div>
-
-          <button class="btn btn-primary" id="quickMovementButton">
-            + Nuevo movimiento
-          </button>
-        </div>
-
-        <!-- BALANCE PRINCIPAL -->
-
-        <div class="balance-card">
-          <div class="balance-info">
-            <span> DINERO DISPONIBLE </span>
-
-            <h2 id="dashboardAvailable">S/ 0.00</h2>
-
-            <p>Dinero inicial + ingresos − gastos</p>
-          </div>
-
-          <div class="balance-icon">S/</div>
-        </div>
-
-        <!-- ESTADÍSTICAS -->
-
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-top">
-              <span class="stat-label"> DINERO INICIAL </span>
-
-              <div class="stat-icon black">S/</div>
             </div>
 
-            <strong id="dashboardInitial"> S/ 0.00 </strong>
+            <div class="topbar-actions">
 
-            <span class="stat-description"> Fondos registrados </span>
-          </div>
+                <button
+                    class="icon-button"
+                    id="quickAddButton"
+                    title="Agregar movimiento"
+                >
+                    +
+                </button>
 
-          <div class="stat-card">
-            <div class="stat-top">
-              <span class="stat-label"> INGRESOS </span>
-
-              <div class="stat-icon green">↑</div>
             </div>
 
-            <strong class="positive" id="dashboardIncome"> S/ 0.00 </strong>
+        </header>
 
-            <span class="stat-description"> Total de ingresos </span>
-          </div>
+        <section
+            class="content-section active"
+            id="section-dashboard"
+        >
 
-          <div class="stat-card">
-            <div class="stat-top">
-              <span class="stat-label"> GASTOS </span>
+            <div class="welcome-card">
 
-              <div class="stat-icon red">↓</div>
-            </div>
+                <div>
 
-            <strong class="negative" id="dashboardExpense"> S/ 0.00 </strong>
+                    <span class="eyebrow">
+                        RESUMEN FINANCIERO
+                    </span>
 
-            <span class="stat-description"> Total de gastos </span>
-          </div>
+                    <h2>
+                        Administra tu dinero
+                        de forma inteligente.
+                    </h2>
 
-          <div class="stat-card">
-            <div class="stat-top">
-              <span class="stat-label"> BALANCE </span>
+                    <p>
+                        Controla tus ingresos, gastos,
+                        deudas y metas de ahorro desde
+                        un solo lugar.
+                    </p>
 
-              <div class="stat-icon dark-red">$</div>
-            </div>
-
-            <strong id="dashboardBalance"> S/ 0.00 </strong>
-
-            <span class="stat-description"> Ingresos − gastos </span>
-          </div>
-        </div>
-
-        <!-- GRÁFICOS -->
-
-        <div class="dashboard-grid">
-          <div class="panel chart-panel">
-            <div class="panel-header">
-              <div>
-                <h3>Resumen financiero</h3>
-
-                <p>Distribución de tus ingresos y gastos</p>
-              </div>
-            </div>
-
-            <div class="chart-container">
-              <div class="donut-chart">
-                <div class="donut-center">
-                  <strong id="chartTotal"> S/ 0 </strong>
-
-                  <span> Movimientos </span>
                 </div>
-              </div>
+
+                <div class="welcome-decoration">
+                    S/
+                </div>
+
             </div>
 
-            <div class="chart-legend">
-              <div class="legend-item">
-                <span class="legend-dot income-dot"></span>
+            <div class="stats-grid">
 
-                <span> Ingresos </span>
+                <div class="stat-card balance-card">
 
-                <strong id="chartIncome"> S/ 0 </strong>
-              </div>
+                    <div class="stat-header">
+                        <span>Dinero disponible</span>
+                        <div class="stat-icon">S/</div>
+                    </div>
 
-              <div class="legend-item">
-                <span class="legend-dot expense-dot"></span>
+                    <h3 id="availableMoney">
+                        S/ 0.00
+                    </h3>
 
-                <span> Gastos </span>
+                    <p>
+                        Saldo actual disponible
+                    </p>
 
-                <strong id="chartExpense"> S/ 0 </strong>
-              </div>
+                </div>
+
+                <div class="stat-card income-card">
+
+                    <div class="stat-header">
+                        <span>Ingresos</span>
+                        <div class="stat-icon">↑</div>
+                    </div>
+
+                    <h3 id="totalIncome">
+                        S/ 0.00
+                    </h3>
+
+                    <p>
+                        Total de ingresos registrados
+                    </p>
+
+                </div>
+
+                <div class="stat-card expense-card">
+
+                    <div class="stat-header">
+                        <span>Gastos</span>
+                        <div class="stat-icon">↓</div>
+                    </div>
+
+                    <h3 id="totalExpenses">
+                        S/ 0.00
+                    </h3>
+
+                    <p>
+                        Total de gastos registrados
+                    </p>
+
+                </div>
+
+                <div class="stat-card debt-card">
+
+                    <div class="stat-header">
+                        <span>Balance de deudas</span>
+                        <div class="stat-icon">!</div>
+                    </div>
+
+                    <h3 id="debtBalance">
+                        S/ 0.00
+                    </h3>
+
+                    <p>
+                        Lo que te deben menos lo que debes
+                    </p>
+
+                </div>
+
             </div>
-          </div>
 
-          <!-- ACTIVIDAD -->
+            <div class="dashboard-grid">
 
-          <div class="panel">
-            <div class="panel-header">
-              <div>
-                <h3>Últimos movimientos</h3>
+                <div class="panel chart-panel">
 
-                <p>Actividad financiera reciente</p>
-              </div>
+                    <div class="panel-header">
 
-              <button class="text-button" data-section-link="movimientos">
-                Ver todos
-              </button>
+                        <div>
+                            <h3>Ingresos vs gastos</h3>
+                            <p>
+                                Comparación de tus movimientos
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="incomeExpenseChart"></canvas>
+                    </div>
+
+                </div>
+
+                <div class="panel">
+
+                    <div class="panel-header">
+
+                        <div>
+                            <h3>Resumen de deudas</h3>
+                            <p>
+                                Situación actual
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="debt-summary">
+
+                        <div class="summary-row">
+                            <span>Me deben</span>
+                            <strong
+                                id="dashboardOwedToMe"
+                            >
+                                S/ 0.00
+                            </strong>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Debo</span>
+                            <strong
+                                id="dashboardIOwe"
+                            >
+                                S/ 0.00
+                            </strong>
+                        </div>
+
+                        <div class="summary-row highlight">
+                            <span>Balance</span>
+                            <strong
+                                id="dashboardDebtBalance"
+                            >
+                                S/ 0.00
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
 
-            <div id="recentMovements">
-              <div class="empty-state">
-                <div class="empty-icon">↕</div>
+            <div class="panel">
 
-                <p>Todavía no tienes movimientos.</p>
-              </div>
+                <div class="panel-header">
+
+                    <div>
+                        <h3>Últimos movimientos</h3>
+                        <p>
+                            Tus actividades financieras recientes
+                        </p>
+                    </div>
+
+                    <button
+                        class="text-button"
+                        data-section-target="movimientos"
+                    >
+                        Ver todos
+                    </button>
+
+                </div>
+
+                <div id="recentMovements">
+                    <div class="empty-state">
+                        No hay movimientos registrados.
+                    </div>
+                </div>
+
             </div>
-          </div>
-        </div>
 
-        <!-- METAS -->
+        </section>
 
-        <div class="panel">
-          <div class="panel-header">
-            <div>
-              <h3>Progreso de tus metas</h3>
+        <section
+            class="content-section"
+            id="section-movimientos"
+        >
 
-              <p>Revisa cuánto has avanzado.</p>
+            <div class="section-heading">
+
+                <div>
+                    <span class="eyebrow">
+                        FINANZAS
+                    </span>
+
+                    <h2>
+                        Movimientos
+                    </h2>
+
+                    <p>
+                        Registra y controla tus ingresos y gastos.
+                    </p>
+                </div>
+
+                <button
+                    class="primary-button"
+                    id="addMovementButton"
+                >
+                    + Nuevo movimiento
+                </button>
+
             </div>
 
-            <button class="text-button" data-section-link="metas">
-              Ver metas
-            </button>
-          </div>
+            <div class="filter-bar">
 
-          <div class="goals-preview" id="dashboardGoals"></div>
-        </div>
-      </section>
+                <input
+                    type="text"
+                    id="movementSearch"
+                    placeholder="Buscar movimiento..."
+                >
 
-      <!-- ============================= -->
-      <!-- MI DINERO -->
-      <!-- ============================= -->
+                <select id="movementFilter">
 
-      <section class="content-section" id="dinero">
-        <div class="section-header">
-          <div>
-            <span class="section-kicker"> MIS FONDOS </span>
+                    <option value="all">
+                        Todos
+                    </option>
 
-            <h2>Mi dinero</h2>
+                    <option value="income">
+                        Ingresos
+                    </option>
 
-            <p>Registra cuánto dinero tienes actualmente.</p>
-          </div>
+                    <option value="expense">
+                        Gastos
+                    </option>
 
-          <button class="btn btn-primary" id="addMoneyButton">
-            + Agregar dinero
-          </button>
-        </div>
+                </select>
 
-        <div class="balance-small-card">
-          <span> DINERO DISPONIBLE </span>
+            </div>
 
-          <strong id="availableBalance"> S/ 0.00 </strong>
+            <div class="panel">
 
-          <small> Dinero inicial + ingresos − gastos </small>
-        </div>
+                <div
+                    id="movementsList"
+                    class="movement-list"
+                ></div>
 
-        <div class="cards-grid" id="moneyList"></div>
-      </section>
+            </div>
 
-      <!-- ============================= -->
-      <!-- MOVIMIENTOS -->
-      <!-- ============================= -->
+        </section>
 
-      <section class="content-section" id="movimientos">
-        <div class="section-header">
-          <div>
-            <span class="section-kicker"> ACTIVIDAD </span>
+        <section
+            class="content-section"
+            id="section-meDeben"
+        >
 
-            <h2>Movimientos</h2>
+            <div class="section-heading">
 
-            <p>Registra y administra tus ingresos y gastos.</p>
-          </div>
+                <div>
+                    <span class="eyebrow">
+                        CUENTAS POR COBRAR
+                    </span>
 
-          <button class="btn btn-primary" id="addMovementButton">
-            + Nuevo movimiento
-          </button>
-        </div>
+                    <h2>
+                        Me deben
+                    </h2>
 
-        <div class="filter-bar">
-          <input
-            type="text"
-            id="movementSearch"
-            placeholder="Buscar movimiento..."
-          />
+                    <p>
+                        Registra cuánto te deben y actualiza
+                        los pagos sin crear nuevos registros.
+                    </p>
+                </div>
 
-          <select id="movementFilter">
-            <option value="todos">Todos</option>
+                <button
+                    class="primary-button"
+                    id="addOwedButton"
+                >
+                    + Nueva deuda
+                </button>
 
-            <option value="ingreso">Ingresos</option>
+            </div>
 
-            <option value="gasto">Gastos</option>
-          </select>
-        </div>
+            <div class="debt-total-card">
 
-        <div class="panel">
-          <div class="table-wrapper" id="movementTable"></div>
-        </div>
-      </section>
+                <span>
+                    Total que te deben
+                </span>
 
-      <!-- ============================= -->
-      <!-- ME DEBEN -->
-      <!-- ============================= -->
+                <strong id="totalOwedToMe">
+                    S/ 0.00
+                </strong>
 
-      <section class="content-section" id="meDeben">
-        <div class="section-header">
-          <div>
-            <span class="section-kicker"> CUENTAS POR COBRAR </span>
+            </div>
 
-            <h2>Me deben</h2>
+            <div
+                class="debt-grid"
+                id="owedList"
+            ></div>
 
-            <p>Registra el dinero que otras personas te deben.</p>
-          </div>
+        </section>
 
-          <button class="btn btn-primary" id="addReceivableButton">
-            + Registrar deuda
-          </button>
-        </div>
+        <section
+            class="content-section"
+            id="section-debo"
+        >
 
-        <div class="balance-small-card">
-          <span> TOTAL QUE TE DEBEN </span>
+            <div class="section-heading">
 
-          <strong id="receivableTotal"> S/ 0.00 </strong>
-        </div>
+                <div>
+                    <span class="eyebrow">
+                        CUENTAS POR PAGAR
+                    </span>
 
-        <div class="cards-grid" id="receivableList"></div>
-      </section>
+                    <h2>
+                        Debo
+                    </h2>
 
-      <!-- ============================= -->
-      <!-- DEBO -->
-      <!-- ============================= -->
+                    <p>
+                        Controla tus deudas y registra los pagos
+                        realizados.
+                    </p>
+                </div>
 
-      <section class="content-section" id="debo">
-        <div class="section-header">
-          <div>
-            <span class="section-kicker"> CUENTAS POR PAGAR </span>
+                <button
+                    class="primary-button"
+                    id="addDebtButton"
+                >
+                    + Nueva deuda
+                </button>
 
-            <h2>Debo</h2>
+            </div>
 
-            <p>Lleva el control de tus deudas pendientes.</p>
-          </div>
+            <div class="debt-total-card">
 
-          <button class="btn btn-primary" id="addDebtButton">
-            + Registrar deuda
-          </button>
-        </div>
+                <span>
+                    Total que debes
+                </span>
 
-        <div class="balance-small-card dark">
-          <span> TOTAL QUE DEBES </span>
+                <strong id="totalIOwe">
+                    S/ 0.00
+                </strong>
 
-          <strong id="debtTotal"> S/ 0.00 </strong>
-        </div>
+            </div>
 
-        <div class="cards-grid" id="debtList"></div>
-      </section>
+            <div
+                class="debt-grid"
+                id="debtList"
+            ></div>
 
-      <!-- ============================= -->
-      <!-- METAS -->
-      <!-- ============================= -->
+        </section>
 
-      <section class="content-section" id="metas">
-        <div class="section-header">
-          <div>
-            <span class="section-kicker"> OBJETIVOS </span>
+        <section
+            class="content-section"
+            id="section-metas"
+        >
 
-            <h2>Metas de ahorro</h2>
+            <div class="section-heading">
 
-            <p>Define objetivos y controla tu progreso.</p>
-          </div>
+                <div>
+                    <span class="eyebrow">
+                        AHORRO
+                    </span>
 
-          <button class="btn btn-primary" id="addGoalButton">
-            + Nueva meta
-          </button>
-        </div>
+                    <h2>
+                        Metas de ahorro
+                    </h2>
 
-        <div class="cards-grid" id="goalsList"></div>
-      </section>
+                    <p>
+                        Define objetivos y controla tu progreso.
+                    </p>
+                </div>
 
-      <!-- ============================= -->
-      <!-- ADMINISTRACIÓN -->
-      <!-- ============================= -->
+                <button
+                    class="primary-button"
+                    id="addGoalButton"
+                >
+                    + Nueva meta
+                </button>
 
-      <section class="content-section" id="administracion">
-        <div class="section-header">
-          <div>
-            <span class="section-kicker"> CONFIGURACIÓN </span>
+            </div>
 
-            <h2>Administración</h2>
+            <div
+                class="goals-grid"
+                id="goalsList"
+            ></div>
 
-            <p>Gestiona la información de tu aplicación.</p>
-          </div>
-        </div>
+        </section>
 
-        <div class="admin-grid">
-          <div class="admin-card">
-            <div class="admin-icon">↓</div>
+        <section
+            class="content-section"
+            id="section-estadisticas"
+        >
 
-            <h3>Exportar datos</h3>
+            <div class="section-heading">
 
-            <p>Descarga una copia de tus datos en formato JSON.</p>
+                <div>
+                    <span class="eyebrow">
+                        ANÁLISIS
+                    </span>
 
-            <button class="btn btn-secondary" id="exportDataButton">
-              Exportar JSON
-            </button>
-          </div>
+                    <h2>
+                        Estadísticas
+                    </h2>
 
-          <div class="admin-card">
-            <div class="admin-icon">↻</div>
+                    <p>
+                        Analiza el comportamiento de tus finanzas.
+                    </p>
+                </div>
 
-            <h3>Restaurar datos</h3>
+            </div>
 
-            <p>Importa nuevamente un archivo JSON.</p>
+            <div class="dashboard-grid">
 
-            <input type="file" id="importDataInput" accept=".json" hidden />
+                <div class="panel">
 
-            <button class="btn btn-secondary" id="importDataButton">
-              Importar JSON
-            </button>
-          </div>
+                    <div class="panel-header">
 
-          <div class="admin-card danger-card">
-            <div class="admin-icon">!</div>
+                        <div>
+                            <h3>
+                                Distribución financiera
+                            </h3>
+                        </div>
 
-            <h3>Borrar información</h3>
+                    </div>
 
-            <p>Elimina todos los datos guardados en este navegador.</p>
+                    <div class="chart-container">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
 
-            <button class="btn btn-danger" id="clearDataButton">
-              Borrar todos los datos
-            </button>
-          </div>
-        </div>
-      </section>
+                </div>
+
+                <div class="panel">
+
+                    <div class="panel-header">
+
+                        <div>
+                            <h3>
+                                Resumen
+                            </h3>
+                        </div>
+
+                    </div>
+
+                    <div class="statistics-list">
+
+                        <div class="summary-row">
+                            <span>Total movimientos</span>
+                            <strong id="statMovementCount">
+                                0
+                            </strong>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Personas que te deben</span>
+                            <strong id="statOwedCount">
+                                0
+                            </strong>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Personas a las que debes</span>
+                            <strong id="statDebtCount">
+                                0
+                            </strong>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Metas activas</span>
+                            <strong id="statGoalCount">
+                                0
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <section
+            class="content-section"
+            id="section-configuracion"
+        >
+
+            <div class="section-heading">
+
+                <div>
+                    <span class="eyebrow">
+                        SISTEMA
+                    </span>
+
+                    <h2>
+                        Configuración
+                    </h2>
+
+                    <p>
+                        Administra y respalda tus datos.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="settings-grid">
+
+                <div class="panel">
+
+                    <h3>
+                        Exportar datos
+                    </h3>
+
+                    <p>
+                        Descarga una copia de tus datos
+                        en formato JSON.
+                    </p>
+
+                    <button
+                        class="primary-button"
+                        id="exportDataButton"
+                    >
+                        Exportar JSON
+                    </button>
+
+                </div>
+
+                <div class="panel">
+
+                    <h3>
+                        Importar datos
+                    </h3>
+
+                    <p>
+                        Restaura tus datos desde un archivo JSON.
+                    </p>
+
+                    <input
+                        type="file"
+                        id="importDataInput"
+                        accept=".json"
+                    >
+
+                </div>
+
+                <div class="panel danger-panel">
+
+                    <h3>
+                        Eliminar todos los datos
+                    </h3>
+
+                    <p>
+                        Esta acción eliminará todos los registros
+                        almacenados en este navegador.
+                    </p>
+
+                    <button
+                        class="danger-button"
+                        id="clearDataButton"
+                    >
+                        Eliminar todos los datos
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
     </main>
 
-    <!-- ============================= -->
-    <!-- MODAL -->
-    <!-- ============================= -->
+    <div
+        class="modal-overlay"
+        id="movementModal"
+    >
 
-    <div class="modal-overlay" id="modalOverlay">
-      <div class="modal">
-        <div class="modal-header">
-          <div>
-            <span class="section-kicker"> NUEVO REGISTRO </span>
+        <div class="modal">
 
-            <h2 id="modalTitle">Agregar</h2>
-          </div>
+            <div class="modal-header">
 
-          <button class="modal-close" id="modalClose">×</button>
+                <div>
+                    <h3>
+                        Nuevo movimiento
+                    </h3>
+
+                    <p>
+                        Registra un ingreso o gasto.
+                    </p>
+                </div>
+
+                <button
+                    class="modal-close"
+                    data-close-modal="movementModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <form id="movementForm">
+
+                <input
+                    type="hidden"
+                    id="movementId"
+                >
+
+                <div class="form-group">
+
+                    <label>
+                        Tipo
+                    </label>
+
+                    <select
+                        id="movementType"
+                        required
+                    >
+
+                        <option value="income">
+                            Ingreso
+                        </option>
+
+                        <option value="expense">
+                            Gasto
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Descripción
+                    </label>
+
+                    <input
+                        type="text"
+                        id="movementDescription"
+                        placeholder="Ej. Sueldo, comida..."
+                        required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Monto
+                    </label>
+
+                    <input
+                        type="number"
+                        id="movementAmount"
+                        min="0.01"
+                        step="0.01"
+                        placeholder="0.00"
+                        required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Categoría
+                    </label>
+
+                    <select id="movementCategory">
+
+                        <option value="general">
+                            General
+                        </option>
+
+                        <option value="salary">
+                            Sueldo
+                        </option>
+
+                        <option value="food">
+                            Alimentación
+                        </option>
+
+                        <option value="transport">
+                            Transporte
+                        </option>
+
+                        <option value="shopping">
+                            Compras
+                        </option>
+
+                        <option value="entertainment">
+                            Entretenimiento
+                        </option>
+
+                        <option value="education">
+                            Educación
+                        </option>
+
+                        <option value="other">
+                            Otros
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Fecha
+                    </label>
+
+                    <input
+                        type="date"
+                        id="movementDate"
+                        required
+                    >
+
+                </div>
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        data-close-modal="movementModal"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        Guardar movimiento
+                    </button>
+
+                </div>
+
+            </form>
+
         </div>
 
-        <form id="modalForm">
-          <div class="form-fields" id="formFields"></div>
+    </div>
 
-          <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" id="cancelModal">
-              Cancelar
-            </button>
+    <div
+        class="modal-overlay"
+        id="debtModal"
+    >
 
-            <button type="submit" class="btn btn-primary">Guardar</button>
-          </div>
-        </form>
-      </div>
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+                    <h3 id="debtModalTitle">
+                        Nueva deuda
+                    </h3>
+
+                    <p>
+                        Registra una nueva persona.
+                    </p>
+                </div>
+
+                <button
+                    class="modal-close"
+                    data-close-modal="debtModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <form id="debtForm">
+
+                <input
+                    type="hidden"
+                    id="debtId"
+                >
+
+                <input
+                    type="hidden"
+                    id="debtType"
+                >
+
+                <div class="form-group">
+
+                    <label>
+                        Nombre
+                    </label>
+
+                    <input
+                        type="text"
+                        id="debtPerson"
+                        placeholder="Ej. Juan Pérez"
+                        required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Monto de la deuda
+                    </label>
+
+                    <input
+                        type="number"
+                        id="debtAmount"
+                        min="0.01"
+                        step="0.01"
+                        placeholder="0.00"
+                        required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Descripción
+                    </label>
+
+                    <textarea
+                        id="debtDescription"
+                        placeholder="Ej. Préstamo personal..."
+                    ></textarea>
+
+                </div>
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        data-close-modal="debtModal"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        Guardar deuda
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <div
+        class="modal-overlay"
+        id="paymentModal"
+    >
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h3 id="paymentModalTitle">
+                        Registrar pago
+                    </h3>
+
+                    <p id="paymentModalDescription">
+                        Actualiza el saldo pendiente.
+                    </p>
+
+                </div>
+
+                <button
+                    class="modal-close"
+                    data-close-modal="paymentModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <form id="paymentForm">
+
+                <input
+                    type="hidden"
+                    id="paymentDebtId"
+                >
+
+                <input
+                    type="hidden"
+                    id="paymentDebtType"
+                >
+
+                <div class="payment-balance">
+
+                    <span>
+                        Saldo pendiente
+                    </span>
+
+                    <strong id="paymentCurrentBalance">
+                        S/ 0.00
+                    </strong>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label id="paymentAmountLabel">
+                        Monto del pago
+                    </label>
+
+                    <input
+                        type="number"
+                        id="paymentAmount"
+                        min="0.01"
+                        step="0.01"
+                        placeholder="0.00"
+                        required
+                    >
+
+                </div>
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        data-close-modal="paymentModal"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        Confirmar pago
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <div
+        class="modal-overlay"
+        id="increaseDebtModal"
+    >
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h3>
+                        Aumentar deuda
+                    </h3>
+
+                    <p>
+                        Agrega un nuevo monto a la deuda existente.
+                    </p>
+
+                </div>
+
+                <button
+                    class="modal-close"
+                    data-close-modal="increaseDebtModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <form id="increaseDebtForm">
+
+                <input
+                    type="hidden"
+                    id="increaseDebtId"
+                >
+
+                <input
+                    type="hidden"
+                    id="increaseDebtType"
+                >
+
+                <div class="payment-balance">
+
+                    <span>
+                        Saldo actual
+                    </span>
+
+                    <strong id="increaseCurrentBalance">
+                        S/ 0.00
+                    </strong>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Monto adicional
+                    </label>
+
+                    <input
+                        type="number"
+                        id="increaseAmount"
+                        min="0.01"
+                        step="0.01"
+                        placeholder="0.00"
+                        required
+                    >
+
+                </div>
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        data-close-modal="increaseDebtModal"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        Aumentar deuda
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <div
+        class="modal-overlay"
+        id="goalModal"
+    >
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h3>
+                        Nueva meta de ahorro
+                    </h3>
+
+                    <p>
+                        Define cuánto quieres ahorrar.
+                    </p>
+
+                </div>
+
+                <button
+                    class="modal-close"
+                    data-close-modal="goalModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <form id="goalForm">
+
+                <input
+                    type="hidden"
+                    id="goalId"
+                >
+
+                <div class="form-group">
+
+                    <label>
+                        Nombre de la meta
+                    </label>
+
+                    <input
+                        type="text"
+                        id="goalName"
+                        placeholder="Ej. Comprar una laptop"
+                        required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Monto objetivo
+                    </label>
+
+                    <input
+                        type="number"
+                        id="goalTarget"
+                        min="0.01"
+                        step="0.01"
+                        required
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Ahorro actual
+                    </label>
+
+                    <input
+                        type="number"
+                        id="goalCurrent"
+                        min="0"
+                        step="0.01"
+                        value="0"
+                        required
+                    >
+
+                </div>
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        data-close-modal="goalModal"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        Guardar meta
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
     </div>
 
     <script src="app.js"></script>
-  </body>
+
+</body>
 </html>
